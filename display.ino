@@ -1,39 +1,52 @@
-void drawTime() {
+void displayTimeShort() {
   bool evenSecond = getSecond() % 2 == 0;
-  char timeFormatted[10], format[10];
+  char timeFormatted[15], format[15];
 
   if (evenSecond) {
     strcpy(format, "%02d:%02d");
   } else {
-    strcpy(format, "%02d %02d");
+    strcpy(format, "%02d o%02d");
   }
   
   snprintf(timeFormatted, sizeof(timeFormatted), format, getHour(), getMinute());
 
-  // Serial.println(timeFormatted);
-
   lmd.clear();
   
-  drawString(timeFormatted);
+  displayTimeString(timeFormatted, 4);
 
   byte secondsBar[ROWS];
   createSecondsBar(secondsBar);
-  drawSprite(secondsBar, 23, 1);
+  drawSprite(secondsBar, (NUM_DEVICES *  8) - 1, 1);
 
   lmd.display();
 }
 
-void drawString(char* text) {
-  int cursor = 0;
+void displayTimeFull() {
+  char timeFormatted[15], format[15];
+
+  strcpy(format, "%02d:%02do%02d");
+  
+  snprintf(timeFormatted, sizeof(timeFormatted), format, getHour(), getMinute(), getSecond());
+
+  lmd.clear();
+  
+  displayTimeString(timeFormatted, 0);
+
+  lmd.display();
+}
+
+void displayTimeString(char* text, int cursor) {
   int len = strlen(text);
 
   for(int idx = 0; idx < len; idx ++) {
     int c = text[idx] - 48;
 
     if (c == -16) { // SPACE
-      cursor += 2;
+      cursor += 1;
     } else if (c == 72) { // x
       cursor += 5;
+    } else if (c == 63) { // o
+      cursor += 1;
     } else if (c == 10) { // :
       drawSprite(font[c], cursor, 1);
       cursor += 2;
@@ -58,15 +71,3 @@ void drawSprite(byte* sprite, int x, int width) {
   }
 }
 
-void createSecondsBar(byte* secondsBar) {
-  int numBars = floor(getSecond() / (60.0 / 9.0)); // 9 states: 8 lights + no light
- 
-  for (int row = ROWS - 1; row >= 0; row--) {
-    if (numBars > 0) {
-      secondsBar[row] = 0x1;
-      numBars--;
-    } else {
-      secondsBar[row] = 0x0;
-    }
-  }
-}
