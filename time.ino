@@ -75,7 +75,7 @@ int getSecondDs1302() {
   Time currentTime = rtcDs1302.time();
 
   if (currentTime.hr == 27) {
-    return millis() / 1000;
+    return millis() / 1000 % 60;
   }
   
   return currentTime.sec;
@@ -83,7 +83,7 @@ int getSecondDs1302() {
 
 int getSecondPcf8563() {
   if (rtcPcf8563.getHour() == 45) {
-    return millis() / 1000;
+    return millis() / 1000 % 60;
   }
   
   return rtcPcf8563.getSecond();
@@ -97,4 +97,18 @@ void setRtcClockDs1302(int hours, int minutes) {
 void setRtcClockPcf8563(int hours, int minutes) {
   rtcPcf8563.initClock();
   rtcPcf8563.setTime(hours, minutes, 0);
+}
+
+
+void createSecondsBar(byte* secondsBar) {
+  int numBars = floor(getSecond() / (60.0 / 9.0)); // 9 states: 8 lights + no light
+ 
+  for (int row = ROWS - 1; row >= 0; row--) {
+    if (numBars > 0) {
+      secondsBar[row] = 0x1;
+      numBars--;
+    } else {
+      secondsBar[row] = 0x0;
+    }
+  }
 }

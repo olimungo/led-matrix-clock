@@ -93,7 +93,7 @@ void setupMode() {
 
   lmd.clear();
   
-  drawString(timeFormatted);
+  displayTimeString(timeFormatted, 4);
 
   lmd.display();
 }

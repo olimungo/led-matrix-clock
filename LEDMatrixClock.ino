@@ -19,9 +19,9 @@
 
 #define MATRIX_CS_PIN 9 // DIN (MOSI) : 11 - CLK: 13
 
-#define MAIN_SWITCH_PIN 6
-#define SECONDARY_SWITCH_PIN 7
-#define TERNARY_SWITCH_PIN 8
+#define MAIN_SWITCH_PIN 0
+#define SECONDARY_SWITCH_PIN 1
+#define TERNARY_SWITCH_PIN 2
 
 #define MODE_CLOCK 0
 #define MODE_SETUP_HOUR1 1
@@ -29,7 +29,7 @@
 #define MODE_SETUP_MINUTE1 3
 #define MODE_SETUP_MINUTE2 4
 
-int CLOCK_TYPE = CLOCK_TYPE_PCF8563;
+int CLOCK_TYPE = CLOCK_TYPE_DS1302;
 
 bool mainSwitchPressed = false;
 bool secondarySwitchPressed = false;
@@ -59,7 +59,7 @@ int savedHour1, savedHour2, savedMinute1, savedMinute2;
 const int ANIM_DELAY = 50;
 
 void setup() {
-  Serial.begin(9600);
+  // Serial.begin(9600);
 
   pinMode(MAIN_SWITCH_PIN, INPUT_PULLUP);
   pinMode(SECONDARY_SWITCH_PIN, INPUT_PULLUP);
@@ -67,6 +67,8 @@ void setup() {
   
   lmd.setEnabled(true);
   lmd.setIntensity(0);
+  lmd.clear();
+  lmd.display();
 }
 
 void loop() {
@@ -82,7 +84,7 @@ void loop() {
   checkButton();
   
   if (mode == MODE_CLOCK) {
-    drawTime();
+    displayTimeFull();
   } else {
     setupMode();
   }
