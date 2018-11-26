@@ -13,22 +13,37 @@ int checkButton() {
     switch(mode) {
       case MODE_CLOCK:
         scrollText(TXT_CLOCK);
+        
         break;
       case MODE_SET_CLOCK:
-        scrollText(TXT_SET_CLOCK);
         modeSetClock = SETCLOCK_HOUR1;
         savedHour1 = floor(getHour() / 10);
         savedHour2 = getHour() % 10;
         savedMinute1 = floor(getMinute() / 10);
         savedMinute2 = getMinute() % 10;
+        
+        scrollText(TXT_SET_CLOCK);
+        
         break;
       case MODE_CHRONO:
-        scrollText(TXT_CHRONO);
+        modeChrono = CHRONO_PAUSED;
         chronoMillis = 0;
         chronoPause = 0;
+        
+        scrollText(TXT_CHRONO);
+        
         break;
       case MODE_TIMER:
+        modeTimer = TIMER_HOUR1;
+        savedHour1 = 0;
+        savedHour2 = 0;
+        savedMinute1 = 0;
+        savedMinute2 = 0;
+        savedSecond1 = 0;
+        savedSecond2 = 0;
+        
         scrollText(TXT_TIMER);
+        
         break;
     }
   }
@@ -37,6 +52,7 @@ int checkButton() {
     switch(mode) {
       case MODE_SET_CLOCK:
         setClock();
+        
         break;
       case MODE_CHRONO:
         if (modeChrono == CHRONO_PAUSED) {
@@ -54,6 +70,20 @@ int checkButton() {
         }
         
         break;
+      case MODE_TIMER:
+        if (modeTimer < TIMER_PAUSED) {
+          setTimer();
+        } else {
+          if (modeTimer == TIMER_PAUSED) {
+            modeTimer = TIMER_RUNNING;
+            timerMillis = millis();
+          } else {
+            modeTimer = TIMER_PAUSED;
+            timerPause = millis();
+          }
+        }
+        
+        break;
     }
   }
 
@@ -66,11 +96,33 @@ int checkButton() {
           mode = MODE_CLOCK;
           setRtcClock();
         }
+        
         break;
       case MODE_CHRONO:
         modeChrono = CHRONO_PAUSED;
         chronoMillis = 0;
         chronoPause = 0;
+        
+        break;
+      case MODE_TIMER:
+        if (modeTimer == TIMER_PAUSED || modeTimer == TIMER_RUNNING || modeTimer == TIMER_OVER) {
+            modeTimer = TIMER_HOUR1;
+            savedHour1 = 0;
+            savedHour2 = 0;
+            savedMinute1 = 0;
+            savedMinute2 = 0;
+            savedSecond1 = 0;
+            savedSecond2 = 0;
+        } else {
+          modeTimer++;
+          
+          if (modeTimer == TIMER_PAUSED && savedHour1 == 0 && savedHour2 == 0 && savedMinute1 == 0 &&
+              savedMinute2 == 0 && savedSecond1 == 0 && savedSecond2 == 0) {
+              modeTimer = TIMER_HOUR1;
+          }
+        }
+        
+        break;
     }
   }
 
@@ -133,3 +185,55 @@ void setClock() {
     }
 }
 
+void setTimer() {
+    switch(modeTimer) {
+      case TIMER_HOUR1:
+        savedHour1++;
+
+        if (savedHour1 > 9) {
+          savedHour1 = 0;
+        }
+        
+        break;
+      case TIMER_HOUR2:
+        savedHour2++;
+
+        if (savedHour2 > 9) {
+          savedHour2 = 0;
+        }
+        
+        break;
+      case TIMER_MINUTE1:
+        savedMinute1++;
+
+        if (savedMinute1 > 5) {
+          savedMinute1 = 0;
+        }
+        
+        break;
+      case TIMER_MINUTE2:
+        savedMinute2++;
+
+        if (savedMinute2 > 9) {
+          savedMinute2 = 0;
+        }
+        
+        break;
+      case TIMER_SECOND1:
+        savedSecond1++;
+
+        if (savedSecond1 > 5) {
+          savedSecond1 = 0;
+        }
+        
+        break;
+      case TIMER_SECOND2:
+        savedSecond2++;
+
+        if (savedSecond2 > 9) {
+          savedSecond2 = 0;
+        }
+        
+        break;
+    }
+}

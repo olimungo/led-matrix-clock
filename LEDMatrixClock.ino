@@ -28,13 +28,23 @@
 #define MODE_CHRONO 2
 #define MODE_TIMER 3
 
-#define SETCLOCK_HOUR1 1
-#define SETCLOCK_HOUR2 2
-#define SETCLOCK_MINUTE1 3
-#define SETCLOCK_MINUTE2 4
+#define SETCLOCK_HOUR1 0
+#define SETCLOCK_HOUR2 1
+#define SETCLOCK_MINUTE1 2
+#define SETCLOCK_MINUTE2 3
 
 #define CHRONO_PAUSED 0
 #define CHRONO_RUNNING 1
+
+#define TIMER_HOUR1 0
+#define TIMER_HOUR2 1
+#define TIMER_MINUTE1 2
+#define TIMER_MINUTE2 3
+#define TIMER_SECOND1 4
+#define TIMER_SECOND2 5
+#define TIMER_PAUSED 6
+#define TIMER_RUNNING 7
+#define TIMER_OVER 8
                   
 byte clockFonts[12][ROWS] = {
   { 0xf, 0xd, 0xd, 0xd, 0xd, 0xd, 0xd, 0xf }, // 0
@@ -112,24 +122,20 @@ byte alphabet[95][8] = {
   {0x00,0x7c,0x04,0x08,0x7c,0x20,0x40,0xfe}, // Z
 };
 
-int CLOCK_TYPE = CLOCK_TYPE_DS1302;
+unsigned int CLOCK_TYPE = CLOCK_TYPE_DS1302;
 
-bool mainSwitchPressed = false;
-bool secondarySwitchPressed = false;
-bool ternarySwitchPressed = false;
+bool mainSwitchPressed = false, secondarySwitchPressed = false, ternarySwitchPressed = false;
 
 LEDMatrixDriver lmd(NUM_DEVICES, MATRIX_CS_PIN);
 
 DS1302 rtcDs1302(CLOCK_RESET, CLOCK_DATA, CLOCK_CLOCK);
 Rtc_Pcf8563 rtcPcf8563;
 
-int mode = MODE_CLOCK;
-int modeSetClock;
-int modeChrono;
-int savedHour1, savedHour2, savedMinute1, savedMinute2;
-unsigned long chronoMillis, chronoPause;
+unsigned int mode = MODE_CLOCK, modeSetClock, modeChrono, modeTimer;
+unsigned int savedHour1, savedHour2, savedMinute1, savedMinute2, savedSecond1, savedSecond2;
+unsigned long chronoMillis, chronoPause, timerMillis, timerPause;
 
-const int ANIM_DELAY = 20;
+const unsigned int ANIM_DELAY = 20;
 
 char TXT_CLOCK[] = "CLOCK";
 char TXT_SET_CLOCK[] = "SET CLOCK";
@@ -170,6 +176,9 @@ void loop() {
       break;
     case MODE_CHRONO:
       displayChrono();
+      break;
+    case MODE_TIMER:
+      displayTimer();
       break;
   }
 
