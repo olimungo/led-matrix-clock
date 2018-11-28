@@ -1,3 +1,11 @@
+void displayTime() {
+  if (timeFormat == SETUP_TIME_SHORT) {
+    displayTimeShort();
+  } else {
+    displayTimeFull();
+  }
+}
+
 void displayTimeShort() {
   bool evenSecond = getSecond() % 2 == 0;
   char timeFormatted[15], format[15];
@@ -39,19 +47,19 @@ void displayTimeString(char* text, int cursor) {
   unsigned int len = strlen(text);
 
   for(int idx = 0; idx < len; idx ++) {
-    int c = text[idx] - 48;
+    int c = text[idx] - 32;
 
-    if (c == -16) { // SPACE
+    if (c == 0) { // SPACE
       cursor += 1;
-    } else if (c == 63) { // o
+    } else if (c == 79) { // o
       cursor += 2;
-    } else if (c == 72) { // x
+    } else if (c == 88) { // x
       cursor += 5;
-    } else if (c == 10) { // :
-      drawClockChar(clockFonts[c], cursor, 1);
+    } else if (c == 26) { // :
+      drawClockChar(alphabet[c], cursor, 1);
       cursor += 2;
     } else {
-      drawClockChar(clockFonts[c], cursor, 4);
+      drawClockChar(alphabet[c], cursor, 4);
       cursor += 5;
     }
   }
@@ -128,11 +136,9 @@ void displayChrono() {
   }
 
   if (evenSecond) {
-    strcpy(format, "xx:xxoxx");
-    snprintf(timeFormatted, sizeof(timeFormatted), format);
+    snprintf(timeFormatted, sizeof(timeFormatted), "xx:xxoxx");
   } else {
-    strcpy(format, "%02d:%02d %02d");
-    snprintf(timeFormatted, sizeof(timeFormatted), format, hour, minute, second);
+    snprintf(timeFormatted, sizeof(timeFormatted), "%02d:%02d %02d", hour, minute, second);
   }
 
   lmd.clear();
@@ -148,7 +154,7 @@ void displayTimer() {
   static unsigned long previousMillis = 0;
   
   unsigned long currentMillis = millis();
-  unsigned long timer;
+  unsigned long delta;
   unsigned int hours, minutes, seconds;
 
   if (currentMillis - previousMillis > 500) {
@@ -158,21 +164,25 @@ void displayTimer() {
   
   switch(modeTimer) {
     case TIMER_PAUSED:
+      delta = timer - ((currentMillis / 1000.0) - (timerStart / 1000.0)) + ((currentMillis / 1000.0) - (timerPause / 1000.0));
+       
+      hours = delta / 60 / 60;
+      minutes = delta / 60 % 60;
+      seconds = delta % 60;
+      
       if (isNumberHidden) {
-        snprintf(timeFormatted, sizeof(timeFormatted), "xx:xx xx", savedHour1, savedHour2, savedMinute1, savedMinute2, savedSecond1, savedSecond2);
+        snprintf(timeFormatted, sizeof(timeFormatted), "xx:xx xx");
       } else {
-        snprintf(timeFormatted, sizeof(timeFormatted), "%d%d:%d%d %d%d", savedHour1, savedHour2, savedMinute1, savedMinute2, savedSecond1, savedSecond2);
+        snprintf(timeFormatted, sizeof(timeFormatted), "%02d:%02d %02d", hours, minutes, seconds);
       }
       
       break;
     case TIMER_RUNNING:
-      timer = ((savedHour1 * 10 + savedHour2) * 60 * 60) +
-              ((savedMinute1 * 10 + savedMinute2) * 60) +
-              (savedSecond1 * 10 + savedSecond2) - ((currentMillis / 1000) - (timerMillis / 1000));
+      delta = timer - ((currentMillis / 1000.0) - (timerStart / 1000.0));
       
-      hours = timer / 60 / 60;
-      minutes = timer / 60 % 60;
-      seconds = timer % 60;
+      hours = delta / 60 / 60;
+      minutes = delta / 60 % 60;
+      seconds = delta % 60;
 
       snprintf(timeFormatted, sizeof(timeFormatted), "%02d:%02d %02d", hours, minutes, seconds);
               

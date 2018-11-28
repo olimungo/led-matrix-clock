@@ -6,7 +6,7 @@ int checkButton() {
 
     mode++;
 
-    if (mode > MODE_TIMER) {
+    if (mode > MODE_SETUP) {
       mode = MODE_CLOCK;
     }
     
@@ -41,14 +41,23 @@ int checkButton() {
         savedMinute2 = 0;
         savedSecond1 = 0;
         savedSecond2 = 0;
+        timerPause = 0;
         
         scrollText(TXT_TIMER);
+        
+        break;
+      case MODE_SETUP:
+        modeSetup = SETUP_TIME_SHORT;
+        
+        scrollText(TXT_SETUP);
         
         break;
     }
   }
 
   if (readSwitch(SECONDARY_SWITCH_PIN, &secondarySwitchPressed)) {
+    result = true;
+    
     switch(mode) {
       case MODE_SET_CLOCK:
         setClock();
@@ -76,7 +85,7 @@ int checkButton() {
         } else {
           if (modeTimer == TIMER_PAUSED) {
             modeTimer = TIMER_RUNNING;
-            timerMillis = millis();
+            timerStart += millis() - timerPause;
           } else {
             modeTimer = TIMER_PAUSED;
             timerPause = millis();
@@ -84,10 +93,20 @@ int checkButton() {
         }
         
         break;
+      case MODE_SETUP:
+        if(modeSetup == SETUP_TIME_SHORT) {
+          modeSetup = SETUP_TIME_FULL;
+        } else {
+          modeSetup = SETUP_TIME_SHORT;
+        }
+        
+        break;
     }
   }
 
   if (readSwitch(TERNARY_SWITCH_PIN, &ternarySwitchPressed)) {
+    result = true;
+    
     switch(mode) {
       case MODE_SET_CLOCK:
         modeSetClock++;
@@ -116,12 +135,24 @@ int checkButton() {
         } else {
           modeTimer++;
           
-          if (modeTimer == TIMER_PAUSED && savedHour1 == 0 && savedHour2 == 0 && savedMinute1 == 0 &&
+          if (modeTimer == TIMER_PAUSED) {
+            if (savedHour1 == 0 && savedHour2 == 0 && savedMinute1 == 0 &&
               savedMinute2 == 0 && savedSecond1 == 0 && savedSecond2 == 0) {
               modeTimer = TIMER_HOUR1;
+            } else {
+              timer = ((savedHour1 * 10 + savedHour2) * 60 * 60) +
+                ((savedMinute1 * 10 + savedMinute2) * 60) +
+                (savedSecond1 * 10 + savedSecond2);
+              timerStart = 0;
+              timerPause = 0;
+            }
           }
         }
         
+        break;
+      case MODE_SETUP:
+        mode = MODE_CLOCK;
+        timeFormat = modeSetup;
         break;
     }
   }

@@ -1,3 +1,11 @@
+void displaySetup() {
+  if(modeSetup == SETUP_TIME_SHORT) {
+    scrollText(TXT_SETUP_TIME_SHORT);
+  } else {
+    scrollText(TXT_SETUP_TIME_FULL);
+  }
+}
+
 void scrollText(char* text) {
   int x = (NUM_DEVICES * 8) - 1;
   int len = strlen(text);
@@ -19,17 +27,18 @@ void scrollText(char* text) {
 
 void drawString(char* text, int len, int x)
 {
-  for( int idx = 0; idx < len; idx ++ )
-  {
+  for(int idx = 0; idx < len; idx ++) {
     int c = text[idx] - 32;
 
-    // stop if char is outside visible area
-    if( x + idx * 8  > (NUM_DEVICES * 8) - 1 )
+    // Stop if char is outside visible area
+    if(x + idx * 7  > (NUM_DEVICES * 8) - 1) {
       return;
+    }
 
     // only draw if char is visible
-    if( 8 + x + idx * 8 > 0 )
-      drawSprite(alphabet[c], x + idx * 8, 0, 8, 8 );
+    if(7 + x + idx * 7 > 0) {
+      drawSprite(alphabet[c], x + idx * 7, 0, 7, 8);
+    }
   }
 }
 
