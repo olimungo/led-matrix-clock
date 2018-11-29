@@ -135,12 +135,6 @@ int checkButton() {
       case MODE_TIMER:
         if (modeTimer == TIMER_PAUSED || modeTimer == TIMER_RUNNING || modeTimer == TIMER_OVER) {
             modeTimer = TIMER_HOUR1;
-            savedHour1 = 0;
-            savedHour2 = 0;
-            savedMinute1 = 0;
-            savedMinute2 = 0;
-            savedSecond1 = 0;
-            savedSecond2 = 0;
         } else {
           modeTimer++;
           

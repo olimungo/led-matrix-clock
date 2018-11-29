@@ -80,7 +80,7 @@ void drawClockChar(byte* sprite, int x, int width) {
 }
 
 void displaySetClock() {
-  static bool isNumberHidden = false;
+  static bool blink = false;
   static unsigned long previousMillis = 0;
   
   unsigned long currentMillis = millis();
@@ -88,10 +88,10 @@ void displaySetClock() {
 
   if (currentMillis - previousMillis > 500) {
     previousMillis = currentMillis;
-    isNumberHidden = !isNumberHidden;
+    blink = !blink;
   }
   
-  if (isNumberHidden) {
+  if (blink) {
     switch(modeSetClock) {
       case SETCLOCK_HOUR1:
         snprintf(timeFormatted, sizeof(timeFormatted), "x%d:%d%d", savedHour2, savedMinute1, savedMinute2);
@@ -118,10 +118,19 @@ void displaySetClock() {
 }
 
 void displayChrono() {
-  bool evenSecond = getSecond() % 2 == 0;
+  static bool blink = false;
+  static unsigned long previousMillis = 0;
+  
+  unsigned long currentMillis = millis();
+  unsigned long delta = currentMillis - chronoMillis;
+  
   char timeFormatted[15], format[15];
   int hour = 0, minute = 0, second = 0;
-  unsigned long delta = millis() - chronoMillis;
+
+  if (currentMillis - previousMillis > 500) {
+    previousMillis = currentMillis;
+    blink = !blink;
+  }
 
   if (chronoMillis > 0) {
     if (chronoPause > 0) {
@@ -131,11 +140,9 @@ void displayChrono() {
     hour = delta / 1000 / 60 / 60;
     minute = delta / 1000 / 60 % 60;
     second = delta / 1000 % 60;
-    
-    evenSecond = false;
   }
 
-  if (evenSecond) {
+  if (blink) {
     snprintf(timeFormatted, sizeof(timeFormatted), "xx:xxoxx");
   } else {
     snprintf(timeFormatted, sizeof(timeFormatted), "%02d:%02d %02d", hour, minute, second);
@@ -149,9 +156,10 @@ void displayChrono() {
 }
 
 void displayTimer() {
-  char timeFormatted[10];
-  static bool isNumberHidden = false;
+  static bool blink = false;
   static unsigned long previousMillis = 0;
+
+  char timeFormatted[10];
   
   unsigned long currentMillis = millis();
   unsigned long delta;
@@ -159,7 +167,7 @@ void displayTimer() {
 
   if (currentMillis - previousMillis > 500) {
     previousMillis = currentMillis;
-    isNumberHidden = !isNumberHidden;
+    blink = !blink;
   }
   
   switch(modeTimer) {
@@ -170,7 +178,7 @@ void displayTimer() {
       minutes = delta / 60 % 60;
       seconds = delta % 60;
       
-      if (isNumberHidden) {
+      if (blink) {
         snprintf(timeFormatted, sizeof(timeFormatted), "xx:xx xx");
       } else {
         snprintf(timeFormatted, sizeof(timeFormatted), "%02d:%02d %02d", hours, minutes, seconds);
@@ -194,7 +202,7 @@ void displayTimer() {
               
       break;
     case TIMER_OVER:
-      if (isNumberHidden) {
+      if (blink) {
         snprintf(timeFormatted, sizeof(timeFormatted), "xx:xx xx");
       } else {
         snprintf(timeFormatted, sizeof(timeFormatted), "00:00 00");
@@ -204,7 +212,7 @@ void displayTimer() {
       
       break;
     default:
-      if (isNumberHidden) {
+      if (blink) {
         switch(modeTimer) {
           case TIMER_HOUR1:
             snprintf(timeFormatted, sizeof(timeFormatted), "x%do%d%d %d%d", savedHour2, savedMinute1, savedMinute2, savedSecond1, savedSecond2);
