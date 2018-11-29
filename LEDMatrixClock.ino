@@ -128,6 +128,7 @@ LEDMatrixDriver lmd(NUM_DEVICES, MATRIX_CS_PIN);
   Rtc_Pcf8563 rtc;
 #endif
 
+Config config;
 unsigned int mode = MODE_CLOCK, modeSetClock, modeChrono, modeTimer, modeSetup;
 unsigned int savedHour1, savedHour2, savedMinute1, savedMinute2, savedSecond1, savedSecond2, buzzerFrequency;
 unsigned long chronoMillis, chronoPause, timer = 0, timerStart, timerPause;
