@@ -1,5 +1,8 @@
 int checkButton() {
   bool result = false;
+  int hours;
+  int minutes;
+  int seconds;
   
   if (readSwitch(MAIN_SWITCH_PIN, &mainSwitchPressed)) {
     result = true;
@@ -35,13 +38,19 @@ int checkButton() {
         break;
       case MODE_TIMER:
         modeTimer = TIMER_HOUR1;
-        savedHour1 = 0;
-        savedHour2 = 0;
-        savedMinute1 = 0;
-        savedMinute2 = 0;
-        savedSecond1 = 0;
-        savedSecond2 = 0;
         timerPause = 0;
+        timer = getTimer();
+
+        hours = timer / 60 / 60;
+        minutes = (timer / 60) % 60;
+        seconds = timer % 60;
+
+        savedHour1 = (hours - (hours % 10)) / 10;
+        savedHour2 = hours % 10;
+        savedMinute1 = (minutes - (minutes % 10)) / 10;
+        savedMinute2 = minutes % 10;
+        savedSecond1 = (seconds - (seconds % 10)) / 10;
+        savedSecond2 = seconds % 10;
         
         scrollText(TXT_TIMER);
         
@@ -82,7 +91,7 @@ int checkButton() {
       case MODE_TIMER:
         if (modeTimer < TIMER_PAUSED) {
           setTimer();
-        } else {
+        } else if (modeTimer != TIMER_OVER) {
           if (modeTimer == TIMER_PAUSED) {
             modeTimer = TIMER_RUNNING;
             timerStart += millis() - timerPause;
@@ -145,6 +154,7 @@ int checkButton() {
                 (savedSecond1 * 10 + savedSecond2);
               timerStart = 0;
               timerPause = 0;
+              putTimer(timer);
             }
           }
         }
@@ -153,6 +163,7 @@ int checkButton() {
       case MODE_SETUP:
         mode = MODE_CLOCK;
         timeFormat = modeSetup;
+        putTimeFormat(timeFormat);
         break;
     }
   }

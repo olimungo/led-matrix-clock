@@ -179,15 +179,29 @@ void displayTimer() {
       break;
     case TIMER_RUNNING:
       delta = timer - ((currentMillis / 1000.0) - (timerStart / 1000.0));
-      
-      hours = delta / 60 / 60;
-      minutes = delta / 60 % 60;
-      seconds = delta % 60;
 
-      snprintf(timeFormatted, sizeof(timeFormatted), "%02d:%02d %02d", hours, minutes, seconds);
+      if (delta <= 0) {
+        modeTimer = TIMER_OVER;
+        buzzerFrequency = 1000;
+        buzzerStepper = 1000;
+      } else {
+        hours = delta / 60 / 60;
+        minutes = delta / 60 % 60;
+        seconds = delta % 60;
+  
+        snprintf(timeFormatted, sizeof(timeFormatted), "%02d:%02d %02d", hours, minutes, seconds);
+      }
               
       break;
     case TIMER_OVER:
+      if (isNumberHidden) {
+        snprintf(timeFormatted, sizeof(timeFormatted), "xx:xx xx");
+      } else {
+        snprintf(timeFormatted, sizeof(timeFormatted), "00:00 00");
+      }
+
+      buzz();
+      
       break;
     default:
       if (isNumberHidden) {
@@ -221,5 +235,15 @@ void displayTimer() {
   displayTimeString(timeFormatted, 0);
 
   lmd.display();
+}
+
+void buzz() {
+  tone(BUZZER, buzzerFrequency, 50);
+
+  buzzerFrequency += buzzerStepper;
+
+  if (buzzerFrequency > 11000) {
+    buzzerStepper = -buzzerStepper;
+  }
 }
 

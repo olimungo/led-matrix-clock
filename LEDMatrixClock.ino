@@ -1,10 +1,10 @@
-#include <LEDMatrixDriver.hpp>
 #include <math.h>
 #include <stdio.h>
-
+#include <EEPROM.h>
 #include <TimeLib.h>
-#include <DS1302.h>
 #include <Wire.h>
+#include <LEDMatrixDriver.hpp>
+#include <DS1302.h>
 // #include <Rtc_Pcf8563.h> // SCL - A5, SDA - A4, INT - 3
 
 #define CLOCK_DS1302 1
@@ -22,10 +22,12 @@
 #define SECONDARY_SWITCH_PIN 2
 #define TERNARY_SWITCH_PIN 3
 
+#define BUZZER 4
+
 #define MODE_CLOCK 0
-#define MODE_SET_CLOCK 1
-#define MODE_CHRONO 2
-#define MODE_TIMER 3
+#define MODE_CHRONO 1
+#define MODE_TIMER 2
+#define MODE_SET_CLOCK 3
 #define MODE_SETUP 4
 
 #define SETCLOCK_HOUR1 0
@@ -49,7 +51,12 @@
 #define SETUP_TIME_SHORT 0
 #define SETUP_TIME_FULL 1
 
-byte alphabet[95][8] = {
+struct Config {
+  int timeFormat;
+  unsigned long timer;
+};
+
+const byte alphabet[95][8] = {
   {0,0,0,0,0,0,0,0}, // SPACE
   {0x10,0x18,0x18,0x18,0x18,0x00,0x18,0x18}, // EXCL
   {0x28,0x28,0x08,0x00,0x00,0x00,0x00,0x00}, // QUOT
@@ -122,9 +129,9 @@ LEDMatrixDriver lmd(NUM_DEVICES, MATRIX_CS_PIN);
 #endif
 
 unsigned int mode = MODE_CLOCK, modeSetClock, modeChrono, modeTimer, modeSetup;
-unsigned int savedHour1, savedHour2, savedMinute1, savedMinute2, savedSecond1, savedSecond2;
-unsigned long chronoMillis, chronoPause, timer, timerStart, timerPause;
-unsigned int timeFormat = SETUP_TIME_FULL;
+unsigned int savedHour1, savedHour2, savedMinute1, savedMinute2, savedSecond1, savedSecond2, buzzerFrequency;
+unsigned long chronoMillis, chronoPause, timer = 0, timerStart, timerPause;
+unsigned int timeFormat, buzzerStepper;
 
 const unsigned int ANIM_DELAY = 20;
 
@@ -142,11 +149,14 @@ void setup() {
   pinMode(MAIN_SWITCH_PIN, INPUT_PULLUP);
   pinMode(SECONDARY_SWITCH_PIN, INPUT_PULLUP);
   pinMode(TERNARY_SWITCH_PIN, INPUT_PULLUP);
+  pinMode(BUZZER, OUTPUT);
   
   lmd.setEnabled(true);
   lmd.setIntensity(0);
   lmd.clear();
   lmd.display();
+
+  timeFormat = getTimeFormat();
 }
 
 void loop() {
