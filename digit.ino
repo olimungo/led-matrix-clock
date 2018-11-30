@@ -250,7 +250,7 @@ void buzz() {
 
   buzzerFrequency += buzzerStepper;
 
-  if (buzzerFrequency > 11000) {
+  if (buzzerFrequency > 11000 || buzzerFrequency <= 0000) {
     buzzerStepper = -buzzerStepper;
   }
 }
