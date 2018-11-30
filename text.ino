@@ -1,5 +1,17 @@
+void displayEasterEgg() {
+  char item[MAX_CHAR_PER_EASTER_EGG_ITEM];
+  int easterEggItemNumber;
+
+  randomSeed(millis());
+  easterEggItemNumber = random(sizeof(easterEggTexts) / MAX_CHAR_PER_EASTER_EGG_ITEM);
+
+  memcpy_P(&item, &easterEggTexts[easterEggItemNumber], MAX_CHAR_PER_EASTER_EGG_ITEM);
+  
+  scrollText(item);
+}
+
 void displaySetup() {
-  if(modeSetup == SETUP_TIME_SHORT) {
+  if (modeSetup == SETUP_TIME_SHORT) {
     scrollText(TXT_SETUP_TIME_SHORT);
   } else {
     scrollText(TXT_SETUP_TIME_FULL);
@@ -12,7 +24,7 @@ void scrollText(char* text) {
 
   lmd.clear();
 
-  while(x >= len * -8) {
+  while (x >= len * -8) {
     drawString(text, len, x);
     lmd.display();
     delay(ANIM_DELAY);
@@ -25,39 +37,38 @@ void scrollText(char* text) {
   }
 }
 
-void drawString(char* text, int len, int x)
-{
-  for(int idx = 0; idx < len; idx ++) {
+void drawString(char* text, int len, int x) {
+  byte letter[8];
+  
+  for (int idx = 0; idx < len; idx ++) {
     int c = text[idx] - 32;
 
     // Stop if char is outside visible area
-    if(x + idx * 7  > (NUM_DEVICES * 8) - 1) {
+    if (x + idx * 7  > (NUM_DEVICES * 8) - 1) {
       return;
     }
 
-    // only draw if char is visible
-    if(7 + x + idx * 7 > 0) {
-      drawSprite(alphabet[c], x + idx * 7, 0, 7, 8);
+    // Only draw if char is visible
+    if (7 + x + idx * 7 > 0) {
+      memcpy_P(&letter, &alphabetInProgmem[c], ROWS);
+      drawSprite(letter, x + idx * 7, 0, 7, 8);
     }
   }
 }
 
-void drawSprite( byte* sprite, int x, int y, int width, int height )
-{
+void drawSprite( byte* sprite, int x, int y, int width, int height ) {
   // The mask is used to get the column bit from the sprite row
   byte mask = B10000000;
   
-  for( int iy = 0; iy < height; iy++ )
-  {
-    for( int ix = 0; ix < width; ix++ )
-    {
+  for (int iy = 0; iy < height; iy++) {
+    for (int ix = 0; ix < width; ix++) {
       lmd.setPixel(x + ix, y + iy, (bool)(sprite[iy] & mask ));
 
-      // shift the mask by one pixel to the right
+      // Shift the mask by one pixel to the right
       mask = mask >> 1;
     }
 
-    // reset column mask
+    // Reset column mask
     mask = B10000000;
   }
 }

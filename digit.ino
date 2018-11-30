@@ -45,6 +45,7 @@ void displayTimeFull() {
 
 void displayTimeString(char* text, int cursor) {
   unsigned int len = strlen(text);
+  byte letter[8];
 
   for(int idx = 0; idx < len; idx ++) {
     int c = text[idx] - 32;
@@ -56,10 +57,12 @@ void displayTimeString(char* text, int cursor) {
     } else if (c == 88) { // x
       cursor += 5;
     } else if (c == 26) { // :
-      drawClockChar(alphabet[c], cursor, 1);
+      memcpy_P(&letter, &alphabetInProgmem[c], ROWS);
+      drawClockChar(letter, cursor, 1);
       cursor += 2;
     } else {
-      drawClockChar(alphabet[c], cursor, 4);
+      memcpy_P(&letter, &alphabetInProgmem[c], ROWS);
+      drawClockChar(letter, cursor, 4);
       cursor += 5;
     }
   }

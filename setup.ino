@@ -1,8 +1,18 @@
 int checkButton() {
   bool result = false;
+  unsigned long currentMillis = millis();
   int hours;
   int minutes;
   int seconds;
+
+  // Check if main button was pressed for more than 3 seconds
+  int sensorValue = digitalRead(MAIN_SWITCH_PIN);
+
+  if (sensorValue == LOW) {
+    if (easterEggMillis == 0) {
+      easterEggMillis = currentMillis;
+    }   
+  }
   
   if (readSwitch(MAIN_SWITCH_PIN, &mainSwitchPressed)) {
     result = true;
@@ -12,6 +22,12 @@ int checkButton() {
     if (mode > MODE_SETUP) {
       mode = MODE_CLOCK;
     }
+
+    if (currentMillis - easterEggMillis > 1000) {
+      mode = MODE_EASTER_EGG;
+    }
+
+    easterEggMillis = 0;
     
     switch(mode) {
       case MODE_CLOCK:
