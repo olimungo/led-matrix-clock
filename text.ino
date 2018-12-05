@@ -1,8 +1,7 @@
-void displayEasterEgg() {
+void displayEasterEgg() {  
   char item[MAX_CHAR_PER_EASTER_EGG_ITEM];
   int easterEggItemNumber;
-
-  randomSeed(millis());
+    
   easterEggItemNumber = random(sizeof(easterEggTexts) / MAX_CHAR_PER_EASTER_EGG_ITEM);
 
   memcpy_P(&item, &easterEggTexts[easterEggItemNumber], MAX_CHAR_PER_EASTER_EGG_ITEM);

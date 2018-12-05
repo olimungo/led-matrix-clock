@@ -16,6 +16,7 @@ int checkButton() {
   
   if (readSwitch(MAIN_SWITCH_PIN, &mainSwitchPressed)) {
     result = true;
+    pinMode(BUZZER, INPUT);
 
     mode++;
 
@@ -25,6 +26,7 @@ int checkButton() {
 
     if (currentMillis - easterEggMillis > 1000) {
       mode = MODE_EASTER_EGG;
+      randomSeed(millis());
     }
 
     easterEggMillis = 0;
@@ -82,6 +84,7 @@ int checkButton() {
 
   if (readSwitch(SECONDARY_SWITCH_PIN, &secondarySwitchPressed)) {
     result = true;
+    pinMode(BUZZER, INPUT);
     
     switch(mode) {
       case MODE_SET_CLOCK:
@@ -131,6 +134,7 @@ int checkButton() {
 
   if (readSwitch(TERNARY_SWITCH_PIN, &ternarySwitchPressed)) {
     result = true;
+    pinMode(BUZZER, INPUT);
     
     switch(mode) {
       case MODE_SET_CLOCK:

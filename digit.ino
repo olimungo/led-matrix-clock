@@ -195,6 +195,7 @@ void displayTimer() {
         modeTimer = TIMER_OVER;
         buzzerFrequency = 1000;
         buzzerStepper = 1000;
+        pinMode(BUZZER, OUTPUT);
       } else {
         hours = delta / 60 / 60;
         minutes = delta / 60 % 60;
@@ -253,7 +254,7 @@ void buzz() {
 
   buzzerFrequency += buzzerStepper;
 
-  if (buzzerFrequency > 11000 || buzzerFrequency <= 0000) {
+  if (buzzerFrequency > 11000 || buzzerFrequency <= 1000) {
     buzzerStepper = -buzzerStepper;
   }
 }
