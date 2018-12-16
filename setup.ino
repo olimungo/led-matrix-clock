@@ -19,12 +19,12 @@ int checkButton() {
     pinMode(BUZZER, INPUT);
 
     mode++;
-
-    if (mode > MODE_SETUP) {
+      
+    if ((NUM_DEVICES < 4 && mode == MODE_SETUP) || mode > MODE_SETUP) {
       mode = MODE_CLOCK;
-    }
+    } 
 
-    if (currentMillis - easterEggMillis > 1000) {
+    if (currentMillis - easterEggMillis > 750) {
       mode = MODE_EASTER_EGG;
       randomSeed(millis());
     }
@@ -55,9 +55,14 @@ int checkButton() {
         
         break;
       case MODE_TIMER:
-        modeTimer = TIMER_HOUR1;
+        if (NUM_DEVICES < 4) {
+          modeTimer = TIMER_MINUTE1;
+        } else {
+          modeTimer = TIMER_HOUR1;
+        }
+
         timerPause = 0;
-        timer = getTimer();
+        timer = getRecordedTimer();
 
         hours = timer / 60 / 60;
         minutes = (timer / 60) % 60;
@@ -154,21 +159,29 @@ int checkButton() {
         break;
       case MODE_TIMER:
         if (modeTimer == TIMER_PAUSED || modeTimer == TIMER_RUNNING || modeTimer == TIMER_OVER) {
-            modeTimer = TIMER_HOUR1;
+            if (NUM_DEVICES < 4) {
+              modeTimer = TIMER_MINUTE1;
+            } else {
+              modeTimer = TIMER_HOUR1;
+            }
         } else {
           modeTimer++;
           
           if (modeTimer == TIMER_PAUSED) {
             if (savedHour1 == 0 && savedHour2 == 0 && savedMinute1 == 0 &&
               savedMinute2 == 0 && savedSecond1 == 0 && savedSecond2 == 0) {
-              modeTimer = TIMER_HOUR1;
+              if (NUM_DEVICES < 4) {
+                modeTimer = TIMER_MINUTE1;
+              } else {
+                modeTimer = TIMER_HOUR1;
+              }
             } else {
               timer = ((savedHour1 * 10 + savedHour2) * 60 * 60) +
                 ((savedMinute1 * 10 + savedMinute2) * 60) +
                 (savedSecond1 * 10 + savedSecond2);
               timerStart = 0;
               timerPause = 0;
-              putTimer(timer);
+              recordTimer(timer);
             }
           }
         }
@@ -177,7 +190,7 @@ int checkButton() {
       case MODE_SETUP:
         mode = MODE_CLOCK;
         timeFormat = modeSetup;
-        putTimeFormat(timeFormat);
+        recordTimeFormat(timeFormat);
         break;
     }
   }
@@ -293,3 +306,12 @@ void setTimer() {
         break;
     }
 }
+
+void checkMidnight() {
+  if (midnightModeActivated && getHour() == 22 && getMinute() == 43 && getSecond() == 0) {
+    midnightModeActivated = false;
+
+    mode = MODE_MIDNIGHT;
+  }
+}
+

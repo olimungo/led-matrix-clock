@@ -1,12 +1,25 @@
 void displayEasterEgg() {  
-  char item[MAX_CHAR_PER_EASTER_EGG_ITEM];
-  int easterEggItemNumber;
+  char item[MAX_CHAR_PER_ITEM];
+  int itemNumber;
     
-  easterEggItemNumber = random(sizeof(easterEggTexts) / MAX_CHAR_PER_EASTER_EGG_ITEM);
+  itemNumber = random(sizeof(easterEggTexts) / MAX_CHAR_PER_ITEM);
 
-  memcpy_P(&item, &easterEggTexts[easterEggItemNumber], MAX_CHAR_PER_EASTER_EGG_ITEM);
+  memcpy_P(&item, &easterEggTexts[itemNumber], MAX_CHAR_PER_ITEM);
   
   scrollText(item);
+}
+
+void displayMidnightMode() {
+  static unsigned int itemNumber = 0;
+  char item[MAX_CHAR_PER_ITEM];
+
+  memcpy_P(&item, &midnightModeTexts[itemNumber], MAX_CHAR_PER_ITEM);
+  
+  scrollText(item);
+
+  if (++itemNumber >= sizeof(midnightModeTexts) / MAX_CHAR_PER_ITEM) {
+    itemNumber = 0;
+  }
 }
 
 void displaySetup() {

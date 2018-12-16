@@ -1,5 +1,5 @@
 void displayTime() {
-  if (timeFormat == SETUP_TIME_SHORT) {
+  if (timeFormat == SETUP_TIME_SHORT || NUM_DEVICES < 4) {
     displayTimeShort();
   } else {
     displayTimeFull();
@@ -16,70 +16,33 @@ void displayTimeShort() {
     strcpy(format, "%02do%02d");
   }
   
-  snprintf(timeFormatted, sizeof(timeFormatted), format, getHour(), getMinute());
+  sprintf(timeFormatted, format, getHour(), getMinute());
 
   lmd.clear();
-  
-  displayTimeString(timeFormatted, 4);
+
+  if (NUM_DEVICES < 4) {
+    displayTimeString(timeFormatted, 0);
+  } else {
+    displayTimeString(timeFormatted, 4);
+  }
 
   byte secondsBar[ROWS];
   createSecondsBar(secondsBar);
-  drawClockChar(secondsBar, (NUM_DEVICES *  8) - 1, 1);
+  drawSprite(secondsBar, (NUM_DEVICES *  8) - 1, 1);
 
   lmd.display();
 }
 
 void displayTimeFull() {
-  char timeFormatted[15], format[15];
-
-  strcpy(format, "%02d:%02d %02d");
+  char timeFormatted[15];
   
-  snprintf(timeFormatted, sizeof(timeFormatted), format, getHour(), getMinute(), getSecond());
+  sprintf(timeFormatted, "%02d:%02d %02d", getHour(), getMinute(), getSecond());
 
   lmd.clear();
   
   displayTimeString(timeFormatted, 0);
 
   lmd.display();
-}
-
-void displayTimeString(char* text, int cursor) {
-  unsigned int len = strlen(text);
-  byte letter[8];
-
-  for(int idx = 0; idx < len; idx ++) {
-    int c = text[idx] - 32;
-
-    if (c == 0) { // SPACE
-      cursor += 1;
-    } else if (c == 79) { // o
-      cursor += 2;
-    } else if (c == 88) { // x
-      cursor += 5;
-    } else if (c == 26) { // :
-      memcpy_P(&letter, &alphabetInProgmem[c], ROWS);
-      drawClockChar(letter, cursor, 1);
-      cursor += 2;
-    } else {
-      memcpy_P(&letter, &alphabetInProgmem[c], ROWS);
-      drawClockChar(letter, cursor, 4);
-      cursor += 5;
-    }
-  }
-}
-
-void drawClockChar(byte* sprite, int x, int width) {
-  byte mask;
-  
-  for(int iy = 0; iy < ROWS; iy++) {
-    mask = B1 << width - 1;
-    
-    for(int ix = 0; ix < width; ix++) {
-      lmd.setPixel(x + ix, iy, (bool)(sprite[iy] & mask));
-  
-      mask = mask >> 1;
-    }
-  }
 }
 
 void displaySetClock() {
@@ -97,25 +60,29 @@ void displaySetClock() {
   if (blink) {
     switch(modeSetClock) {
       case SETCLOCK_HOUR1:
-        snprintf(timeFormatted, sizeof(timeFormatted), "x%d:%d%d", savedHour2, savedMinute1, savedMinute2);
+        sprintf(timeFormatted, "x%d:%d%d", savedHour2, savedMinute1, savedMinute2);
         break;
       case SETCLOCK_HOUR2:
-        snprintf(timeFormatted, sizeof(timeFormatted), "%dx:%d%d", savedHour1, savedMinute1, savedMinute2);
+        sprintf(timeFormatted, "%dx:%d%d", savedHour1, savedMinute1, savedMinute2);
         break;
       case SETCLOCK_MINUTE1:
-        snprintf(timeFormatted, sizeof(timeFormatted), "%d%d:x%d", savedHour1, savedHour2, savedMinute2);
+        sprintf(timeFormatted, "%d%d:x%d", savedHour1, savedHour2, savedMinute2);
         break;
       case SETCLOCK_MINUTE2:
-        snprintf(timeFormatted, sizeof(timeFormatted), "%d%d:%dx", savedHour1, savedHour2, savedMinute1);
+        sprintf(timeFormatted, "%d%d:%dx", savedHour1, savedHour2, savedMinute1);
         break;
     }
   } else {
-    snprintf(timeFormatted, sizeof(timeFormatted), "%d%d:%d%d", savedHour1, savedHour2, savedMinute1, savedMinute2);
+    sprintf(timeFormatted, "%d%d:%d%d", savedHour1, savedHour2, savedMinute1, savedMinute2);
   }
 
   lmd.clear();
-  
-  displayTimeString(timeFormatted, 5);
+
+  if (NUM_DEVICES < 4) {
+    displayTimeString(timeFormatted, 0);
+  } else {
+    displayTimeString(timeFormatted, 5);
+  }
 
   lmd.display();
 }
@@ -128,7 +95,8 @@ void displayChrono() {
   unsigned long delta = currentMillis - chronoMillis;
   
   char timeFormatted[15], format[15];
-  int hour = 0, minute = 0, second = 0;
+  unsigned int hours = 0, hour1 = 0, hour2 = 0, minutes = 0,
+    minute1 = 0, minute2 = 0, seconds = 0, second1 = 0, second2 = 0;
 
   if (currentMillis - previousMillis > 500) {
     previousMillis = currentMillis;
@@ -140,15 +108,22 @@ void displayChrono() {
       delta -= millis() - chronoPause;
     }
 
-    hour = delta / 1000 / 60 / 60;
-    minute = delta / 1000 / 60 % 60;
-    second = delta / 1000 % 60;
-  }
+    hours = delta / 1000 / 60 / 60;
+    minutes = delta / 1000 / 60 % 60;
+    seconds = delta / 1000 % 60;
 
-  if (blink) {
-    snprintf(timeFormatted, sizeof(timeFormatted), "xx:xxoxx");
+    hour1 = floor(hours / 10);
+    hour2 = hours % 10;
+    minute1 = floor(minutes / 10);
+    minute2 = minutes % 10;
+    second1 = floor(seconds / 10);
+    second2 = seconds % 10;
+  }
+  
+  if (blink && modeChrono == CHRONO_PAUSED) {
+    setTimeString(timeFormatted, "xx : xx", "xx:xx xx", 0, 0, 0, 0, 0, 0);
   } else {
-    snprintf(timeFormatted, sizeof(timeFormatted), "%02d:%02d %02d", hour, minute, second);
+    setTimeString(timeFormatted, "%d%d : %d%d", "%d%d:%d%d %d%d", hour1, hour2, minute1, minute2, second1, second2);
   }
 
   lmd.clear();
@@ -166,7 +141,8 @@ void displayTimer() {
   
   unsigned long currentMillis = millis();
   unsigned long delta;
-  unsigned int hours, minutes, seconds;
+  unsigned int hours = 0, hour1 = 0, hour2 = 0, minutes = 0,
+    minute1 = 0, minute2 = 0, seconds = 0, second1 = 0, second2 = 0;
 
   if (currentMillis - previousMillis > 500) {
     previousMillis = currentMillis;
@@ -180,11 +156,18 @@ void displayTimer() {
       hours = delta / 60 / 60;
       minutes = delta / 60 % 60;
       seconds = delta % 60;
+
+      hour1 = floor(hours / 10);
+      hour2 = hours % 10;
+      minute1 = floor(minutes / 10);
+      minute2 = minutes % 10;
+      second1 = floor(seconds / 10);
+      second2 = seconds % 10;
       
       if (blink) {
-        snprintf(timeFormatted, sizeof(timeFormatted), "xx:xx xx");
+        setTimeString(timeFormatted, "xx : xx", "xx:xx xx", 0, 0, 0, 0, 0, 0);
       } else {
-        snprintf(timeFormatted, sizeof(timeFormatted), "%02d:%02d %02d", hours, minutes, seconds);
+        setTimeString(timeFormatted, "%d%d : %d%d", "%d%d:%d%d %d%d", hour1, hour2, minute1, minute2, second1, second2);
       }
       
       break;
@@ -200,16 +183,23 @@ void displayTimer() {
         hours = delta / 60 / 60;
         minutes = delta / 60 % 60;
         seconds = delta % 60;
-  
-        snprintf(timeFormatted, sizeof(timeFormatted), "%02d:%02d %02d", hours, minutes, seconds);
+
+        hour1 = floor(hours / 10);
+        hour2 = hours % 10;
+        minute1 = floor(minutes / 10);
+        minute2 = minutes % 10;
+        second1 = floor(seconds / 10);
+        second2 = seconds % 10;
+
+        setTimeString(timeFormatted, "%d%d : %d%d", "%d%d:%d%d %d%d", hour1, hour2, minute1, minute2, second1, second2);
       }
               
       break;
     case TIMER_OVER:
       if (blink) {
-        snprintf(timeFormatted, sizeof(timeFormatted), "xx:xx xx");
+        setTimeString(timeFormatted, "xx : xx", "xx:xx xx", 0, 0, 0, 0, 0, 0);
       } else {
-        snprintf(timeFormatted, sizeof(timeFormatted), "00:00 00");
+        setTimeString(timeFormatted, "00 : 00", "00:00 00", 0, 0, 0, 0, 0, 0);
       }
 
       buzz();
@@ -219,26 +209,26 @@ void displayTimer() {
       if (blink) {
         switch(modeTimer) {
           case TIMER_HOUR1:
-            snprintf(timeFormatted, sizeof(timeFormatted), "x%do%d%d %d%d", savedHour2, savedMinute1, savedMinute2, savedSecond1, savedSecond2);
+            sprintf(timeFormatted, "x%do%d%d %d%d", savedHour2, savedMinute1, savedMinute2, savedSecond1, savedSecond2);
             break;
           case TIMER_HOUR2:
-            snprintf(timeFormatted, sizeof(timeFormatted), "%dxo%d%d %d%d", savedHour1, savedMinute1, savedMinute2, savedSecond1, savedSecond2);
+            sprintf(timeFormatted, "%dxo%d%d %d%d", savedHour1, savedMinute1, savedMinute2, savedSecond1, savedSecond2);
             break;
           case TIMER_MINUTE1:
-            snprintf(timeFormatted, sizeof(timeFormatted), "%d%dox%d %d%d", savedHour1, savedHour2, savedMinute2, savedSecond1, savedSecond2);
+            setTimeString(timeFormatted, "x%d : %d%d", "%d%dox%d %d%d", savedHour1, savedHour2, savedMinute2, savedSecond1, savedSecond2, 0);
             break;
           case TIMER_MINUTE2:
-            snprintf(timeFormatted, sizeof(timeFormatted), "%d%do%dx %d%d", savedHour1, savedHour2, savedMinute1, savedSecond1, savedSecond2);
+            setTimeString(timeFormatted, "%dx : %d%d", "%d%do%dx %d%d", savedHour1, savedHour2, savedMinute1, savedSecond1, savedSecond2, 0);
             break;
           case TIMER_SECOND1:
-            snprintf(timeFormatted, sizeof(timeFormatted), "%d%do%d%d x%d", savedHour1, savedHour2, savedMinute1, savedMinute2, savedSecond2);
+            setTimeString(timeFormatted, "%d%d : x%d", "%d%do%d%d x%d", savedHour1, savedHour2, savedMinute1, savedMinute2, savedSecond2, 0);
             break;
           case TIMER_SECOND2:
-            snprintf(timeFormatted, sizeof(timeFormatted), "%d%do%d%d %dx", savedHour1, savedHour2, savedMinute1, savedMinute2, savedSecond1);
+            setTimeString(timeFormatted, "%d%d : %dx", "%d%do%d%d %dx", savedHour1, savedHour2, savedMinute1, savedMinute2, savedSecond1, 0);
             break;
         }
       } else {
-        snprintf(timeFormatted, sizeof(timeFormatted), "%d%d:%d%d %d%d", savedHour1, savedHour2, savedMinute1, savedMinute2, savedSecond1, savedSecond2);
+        setTimeString(timeFormatted, "%d%d : %d%d", "%d%d:%d%d %d%d", savedHour1, savedHour2, savedMinute1, savedMinute2, savedSecond1, savedSecond2);
       }
   }
 
@@ -249,13 +239,54 @@ void displayTimer() {
   lmd.display();
 }
 
-void buzz() {
-  tone(BUZZER, buzzerFrequency, 50);
+void displayTimeString(char *text, int cursor) {
+  unsigned int len = strlen(text);
+  byte letter[8];
 
-  buzzerFrequency += buzzerStepper;
+  for(int idx = 0; idx < len; idx ++) {
+    int c = text[idx] - 32;
 
-  if (buzzerFrequency > 11000 || buzzerFrequency <= 1000) {
-    buzzerStepper = -buzzerStepper;
+    if (c == 0) { // SPACE
+      cursor += 1;
+    } else if (c == 79) { // o
+      cursor += 2;
+    } else if (c == 88) { // x
+      cursor += 5;
+    } else if (c == 26) { // :
+      memcpy_P(&letter, &alphabetInProgmem[c], ROWS);
+      drawSprite(letter, cursor, 1);
+      cursor += 2;
+    } else {
+      memcpy_P(&letter, &alphabetInProgmem[c], ROWS);
+      drawSprite(letter, cursor, 4);
+      cursor += 5;
+    }
+  }
+}
+
+void setTimeString(
+  char *dest,
+  char *shortPattern, char *fullPattern,
+  unsigned int hour1, unsigned int hour2,
+  unsigned int val1, unsigned int val2, unsigned int val3, unsigned int val4) {
+  if (NUM_DEVICES < 4) {
+    sprintf(dest, shortPattern, val1, val2, val3, val4);
+  } else {
+    sprintf(dest, fullPattern, hour1, hour2, val1, val2, val3, val4);
+  }
+}
+
+void drawSprite(byte* sprite, int x, int width) {
+  byte mask;
+  
+  for(int iy = 0; iy < ROWS; iy++) {
+    mask = B1 << width - 1;
+    
+    for(int ix = 0; ix < width; ix++) {
+      lmd.setPixel(x + ix, iy, (bool)(sprite[iy] & mask));
+  
+      mask = mask >> 1;
+    }
   }
 }
 

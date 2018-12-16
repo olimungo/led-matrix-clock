@@ -1,21 +1,21 @@
-int getTimeFormat() {  
+int getRecordedTimeFormat() {  
   getConfig(&config);
 
   return config.timeFormat;
 }
 
-void putTimeFormat(int timeFormat) {  
+void recordTimeFormat(int timeFormat) {  
   getConfig(&config);
   config.timeFormat = timeFormat;
   putConfig(&config);
 }
 
-unsigned long getTimer() {  
+unsigned long getRecordedTimer() {  
   getConfig(&config);
   return config.timer;
 }
 
-void putTimer(unsigned long timer) {  
+void recordTimer(unsigned long timer) {  
   getConfig(&config);
   config.timer = timer;
   putConfig(&config);

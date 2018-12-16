@@ -1,69 +1,25 @@
 int getHour() {
-  #if CLOCK_DS1302
-    Time currentTime = rtc.time();
-  
-    if (currentTime.hr == 27) {
-      return 0;
-    }
-    
-    return currentTime.hr;
-  #else
-    if (rtc.getHour() == 45) {
-      return 0;
-    }
-    
-    return rtc.getHour();
-  #endif
+  DateTime now = rtc.now();
+  return now.hour();
 }
 
 int getMinute() {
-  #if CLOCK_DS1302
-    Time currentTime = rtc.time();
-  
-    if (currentTime.hr == 27) {
-      return 0;
-    }
-    
-    return currentTime.min;
-  #else
-    if (rtc.getHour() == 45) {
-      return 0;
-    }
-    
-    return rtc.getMinute();
-  #endif
+  DateTime now = rtc.now();
+  return now.minute();
 }
 
 int getSecond() {
-  #if CLOCK_DS1302
-    Time currentTime = rtc.time();
-    if (currentTime.hr == 27) {
-      return millis() / 1000 % 60;
-    }
-    
-    return currentTime.sec;
-  #else
-    if (rtc.getHour() == 45) {
-      return millis() / 1000 % 60;
-    }
-    
-    return rtcPcf8563.getSecond();
-  #endif
+  DateTime now = rtc.now();
+  return now.second();
 }
 
 void setRtcClock() {
-  int hours, minutes;
+  int hour, minute;
 
-  hours = int(savedHour1) * 10 + int(savedHour2);
-  minutes = int(savedMinute1) * 10 + int(savedMinute2);
+  hour = int(savedHour1) * 10 + int(savedHour2);
+  minute = int(savedMinute1) * 10 + int(savedMinute2);
   
-  #if CLOCK_DS1302
-    Time newTime(2018, 1, 1, hours, minutes, 0, Time::kMonday);
-    rtc.time(newTime);
-  #else
-    rtc.initClock();
-    rtc.setTime(hours, minutes, 0);
-  #endif
+  rtc.adjust(DateTime(2018, 1, 1, hour, minute, 0));
 }
 
 void createSecondsBar(byte* secondsBar) {
