@@ -23,10 +23,23 @@
 
 #define HARDWARE_TYPE MD_MAX72XX::ICSTATION_HW
 
-#define ANIMATION_DELAY 75 // milliseconds
-#define MAX_FRAMES 4 // number of animation frames
+struct ROLL {
+  uint16_t frameRate;
+  uint32_t referenceTime;
+  int8_t currentBufferRow;
+  uint8_t col;
+  uint8_t currentDigit;
+  uint8_t nextDigit;
+  uint8_t len;
+  uint8_t currentBuffer[8];
+  uint8_t nextBuffer[8];
+};
 
 MD_MAX72XX mx = MD_MAX72XX(HARDWARE_TYPE, MATRIX_DIN_PIN, MATRIX_CLK_PIN, MATRIX_CS_PIN, NUM_DEVICES); // SPI
 RTC_DS1307 rtc;
+
+ROLL rollHour1 = { 500, 0, 0, 10 };
+ROLL rollSecond1 = { 40, 0, 0, 8 };
+ROLL rollSecond2 = { 40, 0, 0, 3 };
 
 unsigned int savedHour1, savedHour2, savedMinute1, savedMinute2, savedSecond1, savedSecond2, buzzerFrequency;

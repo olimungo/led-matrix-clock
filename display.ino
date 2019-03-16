@@ -1,24 +1,51 @@
-int  printChar(char character, int col) {
-  uint8_t buffer[8], len, i = 0;
+void rollCurrentBufferDown(uint8_t *currentBuffer, uint8_t *nextBuffer, int8_t currentBufferRow) {
+  for(int i = 0; i < COL_SIZE; i++) {
+    // Scroll down
+    currentBuffer[i] <<= 1;
 
-  len = mx.getChar(character, sizeof(buffer)/sizeof(buffer[0]), buffer);
-
-  mx.setChar(col, character);
-
-  return len;
+    // For each column in nextBuffer, looking at the row related to currentBufferRow if there's a point.
+    // If so, set a point at the top of the currentBuffer for the same column
+    if(nextBuffer[i] & (1 << currentBufferRow)) {
+      currentBuffer[i] |= 1;
+    }
+  }
 }
 
-void printTime() {
-  char text[15];
-  uint8_t len, i = 0, width, col = COL_SIZE * NUM_DEVICES - 1;
-  
-  sprintf(text, "%02d:%02d %02d", getHour(), getMinute(), getSecond());
-  len = strlen(text);
+void rollDown(ROLL *roll) {
+  uint8_t len;
+  uint32_t now = millis();
 
-  while(i < len) {
-    width = printChar(text[i], col);
-    col -= width;
-    i++;
+  if(now > roll->referenceTime + roll->frameRate) {
+    roll->referenceTime += roll->frameRate;
+    
+    if(roll->currentDigit != roll->nextDigit) {
+      roll->currentBufferRow = 7;
+      roll->currentDigit = roll->nextDigit;
+      roll->len = mx.getChar(String(roll->nextDigit)[0], sizeof(roll->nextBuffer)/sizeof(roll->nextBuffer[0]), roll->nextBuffer);
+    }
+
+    if(roll->currentBufferRow > -1) {
+      rollCurrentBufferDown(roll->currentBuffer, roll->nextBuffer, roll->currentBufferRow);
+
+      mx.setBuffer(roll->col, roll->len, roll->currentBuffer);
+
+      roll->currentBufferRow--;
+    }
   }
+}
+
+int printTime() {
+  uint8_t second = getSecond(), second1 = floor(second / 10), second2 = second % 10;
+
+  if(rollSecond1.nextDigit != second1) {
+    rollSecond1.nextDigit = second1;
+  }
+
+  if(rollSecond2.nextDigit != second2) {
+    rollSecond2.nextDigit = second2;
+  }
+
+  rollDown(&rollSecond1);
+  rollDown(&rollSecond2);
 }
 

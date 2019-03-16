@@ -6,17 +6,13 @@
 #include "global.h"
 #include "font.h"
 
-void resetMatrix(void) {
-  mx.control(MD_MAX72XX::INTENSITY, 0);
-  mx.control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
-  mx.clear();
-}
-
 void setup() {
   rtc.begin();
   mx.begin();
-  
-  resetMatrix();
+
+  mx.control(MD_MAX72XX::INTENSITY, 0);
+  mx.control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
+  mx.clear();
   
   #if DEBUG
     Serial.begin(57600);
@@ -29,6 +25,4 @@ void loop(void) {
   mx.control(MD_MAX72XX::UPDATE, MD_MAX72XX::OFF);
   printTime();
   mx.control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
-
-  delay(100);
 }
