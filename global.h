@@ -23,23 +23,48 @@
 
 #define HARDWARE_TYPE MD_MAX72XX::ICSTATION_HW
 
+enum STATE {
+  CLOCK,
+  TIMER,
+  CHRONO,
+  SETUP
+};
+
+enum CLOCK_FORMAT {
+  SHORT,
+  FULL
+};
+
 struct ROLL {
-  uint16_t frameRate;
-  uint32_t referenceTime;
-  int8_t currentBufferRow;
   uint8_t col;
   uint8_t currentDigit;
   uint8_t nextDigit;
-  uint8_t len;
+  uint32_t referenceTime;
+  uint8_t width;
   uint8_t currentBuffer[8];
   uint8_t nextBuffer[8];
+  int8_t currentBufferRow;
+};
+
+struct SET_UP {
+  CLOCK_FORMAT clockFormat;
 };
 
 MD_MAX72XX mx = MD_MAX72XX(HARDWARE_TYPE, MATRIX_DIN_PIN, MATRIX_CLK_PIN, MATRIX_CS_PIN, NUM_DEVICES); // SPI
 RTC_DS1307 rtc;
 
-ROLL rollHour1 = { 500, 0, 0, 10 };
-ROLL rollSecond1 = { 40, 0, 0, 8 };
-ROLL rollSecond2 = { 40, 0, 0, 3 };
+// currentDigit property must not be between 0 and 9, and has to be positive, so the roll down is triggered at the start
+// ...99 fits these rules...
+// ...but 10, 69 and 666 would have fit too! ;-)
+ROLL rollHour1 = { 31, 99 };
+ROLL rollHour2 = { 26, 99 };
+ROLL rollMinute1 = { 19, 99 };
+ROLL rollMinute2 = { 14, 99 };
+ROLL rollSecond1 = { 8, 99 };
+ROLL rollSecond2 = { 3, 99 };
 
-unsigned int savedHour1, savedHour2, savedMinute1, savedMinute2, savedSecond1, savedSecond2, buzzerFrequency;
+SET_UP setUp = { CLOCK_FORMAT::FULL };
+
+uint8_t state = STATE::CLOCK;
+uint8_t savedHour1, savedHour2, savedMinute1, savedMinute2, savedSecond1, savedSecond2, buzzerFrequency;
+

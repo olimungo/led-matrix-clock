@@ -7,22 +7,36 @@
 #include "font.h"
 
 void setup() {
-  rtc.begin();
-  mx.begin();
-
-  mx.control(MD_MAX72XX::INTENSITY, 0);
-  mx.control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
-  mx.clear();
-  
   #if DEBUG
     Serial.begin(57600);
   #endif
 
+  rtc.begin();
+  mx.begin();
+
+  mx.control(MD_MAX72XX::INTENSITY, 0);
+  mx.clear();
+
   mx.setFont(_font);
+
+  if(setUp.clockFormat == CLOCK_FORMAT::SHORT) {
+    rollHour1.col = 27;
+    rollHour2.col = 22;
+    rollMinute1.col = 15;
+    rollMinute2.col = 10;
+  }
 }
 
 void loop(void) {
-  mx.control(MD_MAX72XX::UPDATE, MD_MAX72XX::OFF);
-  printTime();
-  mx.control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
+  switch(state) {
+    case STATE::CLOCK:
+      displayClock();
+      break;
+    case STATE::TIMER:
+      break;
+    case STATE::CHRONO:
+      break;
+    case STATE::SETUP:
+      break;
+  }
 }
