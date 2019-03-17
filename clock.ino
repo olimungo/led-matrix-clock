@@ -21,18 +21,3 @@ void setRtcClock() {
   
   rtc.adjust(DateTime(2018, 1, 1, hour, minute, 0));
 }
-
-/*
-void createSecondsBar(byte* secondsBar) {
-  int numBars = floor(getSecond() / (60.0 / 9.0)); // 9 states: 8 lights + no light
- 
-  for (int row = ROWS - 1; row >= 0; row--) {
-    if (numBars > 0) {
-      secondsBar[row] = 0x1;
-      numBars--;
-    } else {
-      secondsBar[row] = 0x0;
-    }
-  }
-}
-*/

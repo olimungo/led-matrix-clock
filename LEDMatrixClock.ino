@@ -18,21 +18,27 @@ void setup() {
   mx.clear();
 
   mx.setFont(_font);
+  
+  pinMode(MAIN_SWITCH_PIN, INPUT_PULLUP);
+  pinMode(SECONDARY_SWITCH_PIN, INPUT_PULLUP);
+  pinMode(TERNARY_SWITCH_PIN, INPUT_PULLUP);
 
   if(setUp.clockFormat == CLOCK_FORMAT::SHORT) {
-    rollHour1.col = 27;
-    rollHour2.col = 22;
-    rollMinute1.col = 15;
-    rollMinute2.col = 10;
+    setClockShort();
+  } else {
+    setClockFull();
   }
 }
 
 void loop(void) {
+  handleSwitches();
+  
   switch(state) {
     case STATE::CLOCK:
       displayClock();
       break;
     case STATE::TIMER:
+      displayTimer();
       break;
     case STATE::CHRONO:
       break;

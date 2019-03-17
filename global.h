@@ -14,12 +14,15 @@
   #define PRINTS(s)
 #endif
 
-#define ROWS 8
 #define NUM_DEVICES 4
 
 #define MATRIX_CLK_PIN 13
 #define MATRIX_DIN_PIN 11 // MOSI
 #define MATRIX_CS_PIN 9
+
+#define MAIN_SWITCH_PIN 6
+#define SECONDARY_SWITCH_PIN 7
+#define TERNARY_SWITCH_PIN 8
 
 #define HARDWARE_TYPE MD_MAX72XX::ICSTATION_HW
 
@@ -36,13 +39,13 @@ enum CLOCK_FORMAT {
 };
 
 struct ROLL {
-  uint8_t col;
   uint8_t currentDigit;
   uint8_t nextDigit;
+  uint8_t col;
   uint32_t referenceTime;
   uint8_t width;
-  uint8_t currentBuffer[8];
-  uint8_t nextBuffer[8];
+  uint8_t currentBuffer[COL_SIZE];
+  uint8_t nextBuffer[COL_SIZE];
   int8_t currentBufferRow;
 };
 
@@ -56,12 +59,12 @@ RTC_DS1307 rtc;
 // currentDigit property must not be between 0 and 9, and has to be positive, so the roll down is triggered at the start
 // ...99 fits these rules...
 // ...but 10, 69 and 666 would have fit too! ;-)
-ROLL rollHour1 = { 31, 99 };
-ROLL rollHour2 = { 26, 99 };
-ROLL rollMinute1 = { 19, 99 };
-ROLL rollMinute2 = { 14, 99 };
-ROLL rollSecond1 = { 8, 99 };
-ROLL rollSecond2 = { 3, 99 };
+ROLL rollHour1 = { 99 };
+ROLL rollHour2 = { 99 };
+ROLL rollMinute1 = { 99 };
+ROLL rollMinute2 = { 99 };
+ROLL rollSecond1 = { 99 };
+ROLL rollSecond2 = { 99 };
 
 SET_UP setUp = { CLOCK_FORMAT::FULL };
 
