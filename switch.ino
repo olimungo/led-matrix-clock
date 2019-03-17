@@ -44,19 +44,9 @@ void handleSwitch(uint8_t pin, bool *lastValue, uint32_t *lastRead) {
 }
 
 void mainSwitchClicked() {
-  state++;
-
-  if(state > STATE::SETUP) {
-    state = STATE::CLOCK;
-    resetRolls();
-  }
-
-  switch(state) {
-    case STATE::CLOCK:
-      mx.clear();
-      break;
+  switch(state + 1) {
     case STATE::TIMER:
-      displayTitle("TIMER");
+      displayTitle("TMR");
       break;
     case STATE::CHRONO:
       displayTitle("CHRONO");
@@ -64,6 +54,15 @@ void mainSwitchClicked() {
     case STATE::SETUP:
       displayTitle("SETUP");
       break;
+    case STATE::END:
+      displayTitleClock();
+      break;
+  }
+
+  state++;
+
+  if(state == STATE::END) {
+    state = STATE::CLOCK;
   }
 }
 
@@ -99,14 +98,5 @@ void ternarySwitchClicked() {
       Serial.println("Secondary switch clicked");
       break;
   }
-}
-
-void resetRolls() {
-  rollHour1.currentDigit = 99;
-  rollHour2.currentDigit = 99;
-  rollMinute1.currentDigit = 99;
-  rollMinute2.currentDigit = 99;
-  rollSecond1.currentDigit = 99;
-  rollSecond2.currentDigit = 99;
 }
 

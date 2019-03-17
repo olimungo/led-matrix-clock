@@ -15,6 +15,7 @@
 #endif
 
 #define NUM_DEVICES 4
+#define MAX_COLS COL_SIZE * NUM_DEVICES
 
 #define MATRIX_CLK_PIN 13
 #define MATRIX_DIN_PIN 11 // MOSI
@@ -30,7 +31,8 @@ enum STATE {
   CLOCK,
   TIMER,
   CHRONO,
-  SETUP
+  SETUP,
+  END
 };
 
 enum CLOCK_FORMAT {
@@ -66,7 +68,7 @@ ROLL rollMinute2 = { 99 };
 ROLL rollSecond1 = { 99 };
 ROLL rollSecond2 = { 99 };
 
-SET_UP setUp = { CLOCK_FORMAT::FULL };
+SET_UP setUp = { CLOCK_FORMAT::SHORT };
 
 uint8_t state = STATE::CLOCK;
 uint8_t savedHour1, savedHour2, savedMinute1, savedMinute2, savedSecond1, savedSecond2, buzzerFrequency;
