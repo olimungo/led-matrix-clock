@@ -1,7 +1,7 @@
 void addSecondsBar(uint8_t second, uint8_t col) {
-  uint8_t numBars, REFRESH_RATE = 100;
   static uint32_t referenceTime;
-  uint32_t now = millis();
+  uint8_t numBars;
+  uint32_t now = millis(), REFRESH_RATE = 100;
 
   if(now < referenceTime + REFRESH_RATE) {
     return;
@@ -15,13 +15,14 @@ void addSecondsBar(uint8_t second, uint8_t col) {
 void blinkColon(uint8_t col) {
   static bool isOn = false;
   static uint32_t referenceTime;
+  uint32_t REFRESH_RATE = 1000;
   uint32_t now = millis();
 
-  if(now < referenceTime + 1000) {
+  if(now < referenceTime + REFRESH_RATE) {
     return;
   }
   
-  referenceTime += 1000;
+  referenceTime += REFRESH_RATE;
   isOn = !isOn;
 
   if(isOn) {
@@ -126,7 +127,7 @@ void displayTitleClock() {
   if(setUp.clockFormat == CLOCK_FORMAT::SHORT) {
     sprintf(clock, "%d%d:%d%d  ", hour1, hour2, minute1, minute2);
   } else {
-    sprintf(clock, "%d%d:%d%d %d%d", hour1, hour2, minute1, minute2, second1, second2);
+    sprintf(clock, "%d%d:%d%d %d    ", hour1, hour2, minute1, minute2, second1);
   }
 
   // Update the rolls so there's no graphic glitch
@@ -141,7 +142,11 @@ void displayTitleClock() {
   rollMinute1.nextDigit = minute1;
   rollMinute2.nextDigit = minute2;
   rollSecond1.nextDigit = second1;
-  rollSecond2.nextDigit = second2;
+  rollSecond2.nextDigit = 99;
+
+  for(uint8_t i = 0; i < 4; i++) {
+    rollSecond2.currentBuffer[i] = 0;
+  }
 
   width = createTitle(clock, nextBuffer);
   centerBuffer(nextBuffer, width);
@@ -234,8 +239,7 @@ void rollBufferDown(uint8_t *currentBuffer, uint8_t *nextBuffer, int8_t currentB
 }
 
 void rollDown(ROLL *roll) {
-  uint8_t REFRESH_RATE = 30;
-  uint32_t now = millis();
+  uint32_t now = millis(), REFRESH_RATE = 30;
 
   if(now < roll->referenceTime + REFRESH_RATE) {
     return;

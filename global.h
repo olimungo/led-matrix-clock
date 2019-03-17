@@ -68,7 +68,7 @@ ROLL rollMinute2 = { 99 };
 ROLL rollSecond1 = { 99 };
 ROLL rollSecond2 = { 99 };
 
-SET_UP setUp = { CLOCK_FORMAT::SHORT };
+SET_UP setUp = { CLOCK_FORMAT::FULL };
 
 uint8_t state = STATE::CLOCK;
 uint8_t savedHour1, savedHour2, savedMinute1, savedMinute2, savedSecond1, savedSecond2, buzzerFrequency;
