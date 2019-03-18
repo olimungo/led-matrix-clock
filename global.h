@@ -51,6 +51,13 @@ struct ROLL {
   int8_t currentBufferRow;
 };
 
+enum STATE_TIMER {
+  INTRO,
+  SET,
+  RUN,
+  PAUSE
+};
+
 struct SET_UP {
   CLOCK_FORMAT clockFormat;
 };
@@ -68,9 +75,12 @@ ROLL rollMinute2 = { 99 };
 ROLL rollSecond1 = { 99 };
 ROLL rollSecond2 = { 99 };
 
-SET_UP setUp = { CLOCK_FORMAT::FULL };
+SET_UP setUp;
 uint32_t PAUSE_DISPLAY_REFERENCE_TIME = 0, PAUSE_DISPLAY_DURATION = 1000;
 
+uint8_t fiveMinuteCount = 5;
+
 uint8_t state = STATE::CLOCK;
+uint8_t state_timer;
 uint8_t savedHour1, savedHour2, savedMinute1, savedMinute2, savedSecond1, savedSecond2, buzzerFrequency;
 

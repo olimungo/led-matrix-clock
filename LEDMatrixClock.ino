@@ -23,11 +23,8 @@ void setup() {
   pinMode(SECONDARY_SWITCH_PIN, INPUT_PULLUP);
   pinMode(TERNARY_SWITCH_PIN, INPUT_PULLUP);
 
-  if(setUp.clockFormat == CLOCK_FORMAT::SHORT) {
-    setClockShort();
-  } else {
-    setClockFull();
-  }
+  // setClockShort();
+  setClockFull();
 }
 
 void loop(void) {

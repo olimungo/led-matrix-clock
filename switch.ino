@@ -46,9 +46,11 @@ void handleSwitch(uint8_t pin, bool *lastValue, uint32_t *lastRead) {
 void mainSwitchClicked() {
   switch(state + 1) {
     case STATE::TIMER_1:
+      state_timer = STATE_TIMER::INTRO;
       displayTitle("TMR1");
       break;
     case STATE::TIMER_2:
+      state_timer = STATE_TIMER::INTRO;
       displayTitle("TMR2");
       break;
     case STATE::CHRONO:
@@ -71,10 +73,30 @@ void mainSwitchClicked() {
 void secondarySwitchClicked() {
   switch(state) {
     case STATE::CLOCK:
-      Serial.println("Main switch clickedin CLOCK mode");
+      if(setUp.clockFormat == CLOCK_FORMAT::SHORT) {
+        setClockFull();
+      } else {
+        setUp.clockFormat = CLOCK_FORMAT::SHORT;
+        setClockShort();
+      }
+
+      displayTitleClock();
+      
       break;
     case STATE::TIMER_1:
-      Serial.println("Secondary switch clicked");
+      switch(state_timer) {
+        case STATE_TIMER::SET:
+          fiveMinuteCount += 5;
+
+          if (fiveMinuteCount > 55) {
+             fiveMinuteCount = 5;
+          }
+          break;
+        case STATE_TIMER::RUN:
+          break;
+        case STATE_TIMER::PAUSE:
+          break;
+      }
       break;
     case STATE::TIMER_2:
       Serial.println("Secondary switch clicked");
@@ -91,7 +113,17 @@ void ternarySwitchClicked() {
       Serial.println("Main switch clickedin CLOCK mode");
       break;
     case STATE::TIMER_1:
-      Serial.println("Secondary switch clicked");
+      switch(state_timer) {
+        case STATE_TIMER::SET:
+          state++;
+          break;
+        case STATE_TIMER::RUN:
+          state++;
+          break;
+        case STATE_TIMER::PAUSE:
+          state--;
+          break;
+      }
       break;
     case STATE::TIMER_2:
       Serial.println("Secondary switch clicked");
