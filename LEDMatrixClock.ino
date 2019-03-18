@@ -31,18 +31,25 @@ void setup() {
 }
 
 void loop(void) {
+  uint32_t now = millis();
   handleSwitches();
+
+  if(PAUSE_DISPLAY_REFERENCE_TIME > 0) {
+    if (now < (PAUSE_DISPLAY_REFERENCE_TIME + PAUSE_DISPLAY_DURATION)) {
+      return;
+    } else {
+      PAUSE_DISPLAY_REFERENCE_TIME = 0;
+    }
+  }
   
   switch(state) {
     case STATE::CLOCK:
       displayClock();
       break;
-    case STATE::TIMER:
+    case STATE::TIMER_1 || STATE::TIMER_2:
       displayTimer();
       break;
     case STATE::CHRONO:
-      break;
-    case STATE::SETUP:
       break;
   }
 }

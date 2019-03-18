@@ -45,19 +45,21 @@ void handleSwitch(uint8_t pin, bool *lastValue, uint32_t *lastRead) {
 
 void mainSwitchClicked() {
   switch(state + 1) {
-    case STATE::TIMER:
-      displayTitle("TMR");
+    case STATE::TIMER_1:
+      displayTitle("TMR1");
+      break;
+    case STATE::TIMER_2:
+      displayTitle("TMR2");
       break;
     case STATE::CHRONO:
-      displayTitle("CHRONO");
-      break;
-    case STATE::SETUP:
-      displayTitle("SETUP");
+      displayTitle("CHR");
       break;
     case STATE::END:
       displayTitleClock();
       break;
   }
+
+  PAUSE_DISPLAY_REFERENCE_TIME = millis();
 
   state++;
 
@@ -71,13 +73,13 @@ void secondarySwitchClicked() {
     case STATE::CLOCK:
       Serial.println("Main switch clickedin CLOCK mode");
       break;
-    case STATE::TIMER:
+    case STATE::TIMER_1:
+      Serial.println("Secondary switch clicked");
+      break;
+    case STATE::TIMER_2:
       Serial.println("Secondary switch clicked");
       break;
     case STATE::CHRONO:
-      Serial.println("Secondary switch clicked");
-      break;
-    case STATE::SETUP:
       Serial.println("Secondary switch clicked");
       break;
   }
@@ -88,13 +90,13 @@ void ternarySwitchClicked() {
     case STATE::CLOCK:
       Serial.println("Main switch clickedin CLOCK mode");
       break;
-    case STATE::TIMER:
+    case STATE::TIMER_1:
+      Serial.println("Secondary switch clicked");
+      break;
+    case STATE::TIMER_2:
       Serial.println("Secondary switch clicked");
       break;
     case STATE::CHRONO:
-      Serial.println("Secondary switch clicked");
-      break;
-    case STATE::SETUP:
       Serial.println("Secondary switch clicked");
       break;
   }
