@@ -44,13 +44,20 @@ void handleSwitch(uint8_t pin, bool *lastValue, uint32_t *lastRead) {
 }
 
 void mainSwitchClicked() {
-  switch(state + 1) {
+  uint32_t now = millis();
+  
+  switch(setUp.state + 1) {
     case STATE::TIMER_1:
-      state_timer = STATE_TIMER::INTRO;
+      timer.state = STATE_TIMER::INTRO;
+      timer.targetTime = 0;
+      
       displayTitle("TMR1");
       break;
     case STATE::TIMER_2:
-      state_timer = STATE_TIMER::INTRO;
+      timer.state = STATE_TIMER::INTRO;
+      timer.targetTime = 0;
+      timer.stateSelect = STATE_TIMER_SELECT::HOUR1;
+        
       displayTitle("TMR2");
       break;
     case STATE::CHRONO:
@@ -63,15 +70,21 @@ void mainSwitchClicked() {
 
   PAUSE_DISPLAY_REFERENCE_TIME = millis();
 
-  state++;
+  setUp.state++;
 
-  if(state == STATE::END) {
-    state = STATE::CLOCK;
+  if(setUp.state == STATE::END) {
+    setUp.state = STATE::CLOCK;
+    rollHour1.referenceTime = now;
+    rollHour2.referenceTime = now;
+    rollMinute1.referenceTime = now;
+    rollMinute2.referenceTime = now;
+    rollSecond1.referenceTime = now;
+    rollSecond2.referenceTime = now;
   }
 }
 
 void secondarySwitchClicked() {
-  switch(state) {
+  switch(setUp.state) {
     case STATE::CLOCK:
       if(setUp.clockFormat == CLOCK_FORMAT::SHORT) {
         setClockFull();
@@ -84,13 +97,14 @@ void secondarySwitchClicked() {
       
       break;
     case STATE::TIMER_1:
-      switch(state_timer) {
+      switch(timer.state) {
         case STATE_TIMER::SET:
-          fiveMinuteCount += 5;
+          timer.fiveMinuteCount += 5;
 
-          if (fiveMinuteCount > 55) {
-             fiveMinuteCount = 5;
+          if (timer.fiveMinuteCount > 55) {
+             timer.fiveMinuteCount = 5;
           }
+                    
           break;
         case STATE_TIMER::RUN:
           break;
@@ -99,7 +113,56 @@ void secondarySwitchClicked() {
       }
       break;
     case STATE::TIMER_2:
-      Serial.println("Secondary switch clicked");
+      switch(timer.stateSelect) {
+        case STATE_TIMER_SELECT::HOUR1:
+          timer.hour1++;
+
+          if(timer.hour1 > 9) {
+            timer.hour1 = 0;
+          }
+          
+          break;
+        case STATE_TIMER_SELECT::HOUR2:
+          timer.hour2++;
+
+          if(timer.hour2 > 9) {
+            timer.hour2 = 0;
+          }
+          
+          break;
+        case STATE_TIMER_SELECT::MINUTE1:
+          timer.minute1++;
+
+          if(timer.minute1 > 5) {
+            timer.minute1 = 0;
+          }
+          
+          break;
+        case STATE_TIMER_SELECT::MINUTE2:
+          timer.minute2++;
+
+          if(timer.minute2 > 9) {
+            timer.minute2 = 0;
+          }
+          
+          break;
+        case STATE_TIMER_SELECT::SECOND1:
+          timer.second1++;
+
+          if(timer.second1 > 5) {
+            timer.second1 = 0;
+          }
+          
+          break;
+        case STATE_TIMER_SELECT::SECOND2:
+          timer.second2++;
+
+          if(timer.second2 > 9) {
+            timer.second2 = 0;
+          }
+          
+          break;
+      }
       break;
     case STATE::CHRONO:
       Serial.println("Secondary switch clicked");
@@ -108,25 +171,42 @@ void secondarySwitchClicked() {
 }
 
 void ternarySwitchClicked() {
-  switch(state) {
+  uint32_t now = millis();
+  
+  switch(setUp.state) {
     case STATE::CLOCK:
       Serial.println("Main switch clickedin CLOCK mode");
       break;
     case STATE::TIMER_1:
-      switch(state_timer) {
+      switch(timer.state) {
         case STATE_TIMER::SET:
-          state++;
+          if(timer.targetTime == 0) {
+            timer.targetTime = now + timer.fiveMinuteCount * 60.0 * 1000.0;
+    
+            rollHour1.referenceTime = now;
+            rollHour2.referenceTime = now;
+            rollMinute1.referenceTime = now;
+            rollMinute2.referenceTime = now;
+            rollSecond1.referenceTime = now;
+            rollSecond2.referenceTime = now;
+          }
+          timer.state++;
           break;
         case STATE_TIMER::RUN:
-          state++;
+          timer.state++;
           break;
         case STATE_TIMER::PAUSE:
-          state--;
+          timer.state--;
           break;
       }
       break;
     case STATE::TIMER_2:
-      Serial.println("Secondary switch clicked");
+      timer.stateSelect++;
+
+      if(timer.stateSelect > STATE_TIMER_SELECT::SECOND2) {
+        timer.stateSelect = STATE_TIMER_SELECT::HOUR1;
+      }
+      
       break;
     case STATE::CHRONO:
       Serial.println("Secondary switch clicked");

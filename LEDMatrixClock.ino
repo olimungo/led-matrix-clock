@@ -22,6 +22,7 @@ void setup() {
   pinMode(MAIN_SWITCH_PIN, INPUT_PULLUP);
   pinMode(SECONDARY_SWITCH_PIN, INPUT_PULLUP);
   pinMode(TERNARY_SWITCH_PIN, INPUT_PULLUP);
+  pinMode(BUZZER, INPUT);
 
   // setClockShort();
   setClockFull();
@@ -29,6 +30,7 @@ void setup() {
 
 void loop(void) {
   uint32_t now = millis();
+  
   handleSwitches();
 
   if(PAUSE_DISPLAY_REFERENCE_TIME > 0) {
@@ -39,11 +41,12 @@ void loop(void) {
     }
   }
   
-  switch(state) {
+  switch(setUp.state) {
     case STATE::CLOCK:
       displayClock();
       break;
-    case STATE::TIMER_1 || STATE::TIMER_2:
+    case STATE::TIMER_1:
+    case STATE::TIMER_2:
       displayTimer();
       break;
     case STATE::CHRONO:

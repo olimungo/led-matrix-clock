@@ -25,6 +25,8 @@
 #define SECONDARY_SWITCH_PIN 7
 #define TERNARY_SWITCH_PIN 8
 
+#define BUZZER 5
+
 #define HARDWARE_TYPE MD_MAX72XX::ICSTATION_HW
 
 enum STATE {
@@ -58,8 +60,27 @@ enum STATE_TIMER {
   PAUSE
 };
 
+enum STATE_TIMER_SELECT {
+  HOUR1,
+  HOUR2,
+  MINUTE1,
+  MINUTE2,
+  SECOND1,
+  SECOND2
+};
+
 struct SET_UP {
+  uint8_t state;
   CLOCK_FORMAT clockFormat;
+};
+
+struct TIMER {
+  uint8_t state;
+  uint8_t fiveMinuteCount;
+  uint8_t hour1, hour2, minute1, minute2, second1, second2;
+  uint32_t targetTime;
+  uint32_t referencePausedTime;
+  uint8_t stateSelect;
 };
 
 MD_MAX72XX mx = MD_MAX72XX(HARDWARE_TYPE, MATRIX_DIN_PIN, MATRIX_CLK_PIN, MATRIX_CS_PIN, NUM_DEVICES); // SPI
@@ -75,12 +96,10 @@ ROLL rollMinute2 = { 99 };
 ROLL rollSecond1 = { 99 };
 ROLL rollSecond2 = { 99 };
 
-SET_UP setUp;
+SET_UP setUp = { STATE::CLOCK };
+TIMER timer = { STATE_TIMER::INTRO, 5, 0, 0, 0, 0, 0, 0 };
+
 uint32_t PAUSE_DISPLAY_REFERENCE_TIME = 0, PAUSE_DISPLAY_DURATION = 1000;
 
-uint8_t fiveMinuteCount = 5;
-
-uint8_t state = STATE::CLOCK;
-uint8_t state_timer;
 uint8_t savedHour1, savedHour2, savedMinute1, savedMinute2, savedSecond1, savedSecond2, buzzerFrequency;
 
