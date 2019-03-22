@@ -189,8 +189,10 @@ void ternarySwitchClicked() {
             rollMinute2.referenceTime = now;
             rollSecond1.referenceTime = now;
             rollSecond2.referenceTime = now;
+
+            timer.state++;
           }
-          timer.state++;
+
           break;
         case STATE_TIMER::RUN:
           timer.state++;
@@ -199,12 +201,30 @@ void ternarySwitchClicked() {
           timer.state--;
           break;
       }
+      
       break;
     case STATE::TIMER_2:
       timer.stateSelect++;
 
       if(timer.stateSelect > STATE_TIMER_SELECT::SECOND2) {
-        timer.stateSelect = STATE_TIMER_SELECT::HOUR1;
+        if(timer.targetTime == 0) {
+          timer.targetTime = now +
+            timer.hour1 * 10.0 * 60.0 * 60.0 * 1000.0 +
+            timer.hour2 * 60.0 * 60.0 * 1000.0 +
+            timer.minute1 * 10.0 * 60.0 * 1000.0 +
+            timer.minute2 * 60.0 * 1000.0 +
+            timer.second1 * 10.0 * 1000.0 +
+            timer.second2 * 1000.0;
+  
+          rollHour1.referenceTime = now;
+          rollHour2.referenceTime = now;
+          rollMinute1.referenceTime = now;
+          rollMinute2.referenceTime = now;
+          rollSecond1.referenceTime = now;
+          rollSecond2.referenceTime = now;
+
+          timer.state++;
+        }
       }
       
       break;
