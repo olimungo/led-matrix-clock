@@ -115,8 +115,11 @@ void rollDown(ROLL *roll) {
   }
 }
 
-void setRollsReferenceTime(uint32_t time) {
+void resetRolls(uint32_t time) {
   rollHour1.referenceTime = rollHour2.referenceTime = rollMinute1.referenceTime =
     rollMinute2.referenceTime = rollSecond1.referenceTime = rollSecond2.referenceTime = time;
+    
+  rollHour1.currentDigit = rollHour2.currentDigit = rollMinute1.currentDigit =
+    rollMinute2.currentDigit = rollSecond1.currentDigit = rollSecond2.currentDigit = 99;
 }
 

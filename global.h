@@ -33,8 +33,7 @@ enum STATE {
   CLOCK,
   TIMER_1,
   TIMER_2,
-  CHRONO,
-  END
+  CHRONO
 };
 
 enum CLOCK_FORMAT {

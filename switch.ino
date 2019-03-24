@@ -63,7 +63,7 @@ void mainSwitchClicked() {
     case STATE::CHRONO:
       displayTitle("CHR");
       break;
-    case STATE::END:
+    default:
       displayTitleClock();
       break;
   }
@@ -72,9 +72,9 @@ void mainSwitchClicked() {
 
   setUp.state++;
 
-  if(setUp.state == STATE::END) {
+  if(setUp.state > STATE::CHRONO) {
     setUp.state = STATE::CLOCK;
-    setRollsReferenceTime(now);
+    resetRolls(now);
   }
 }
 
@@ -104,60 +104,76 @@ void secondarySwitchClicked() {
         case STATE_TIMER::RUN:
           break;
         case STATE_TIMER::PAUSE:
+          timer.state = STATE_TIMER::INTRO;
+          timer.targetTime = 0;
           break;
       }
+      
       break;
     case STATE::TIMER_2:
-      switch(timer.stateSelect) {
-        case STATE_TIMER_SELECT::HOUR1:
-          timer.hour1++;
-
-          if(timer.hour1 > 9) {
-            timer.hour1 = 0;
+      switch(timer.state) {
+        case STATE_TIMER::SET:
+          switch(timer.stateSelect) {
+            case STATE_TIMER_SELECT::HOUR1:
+              timer.hour1++;
+    
+              if(timer.hour1 > 9) {
+                timer.hour1 = 0;
+              }
+              
+              break;
+            case STATE_TIMER_SELECT::HOUR2:
+              timer.hour2++;
+    
+              if(timer.hour2 > 9) {
+                timer.hour2 = 0;
+              }
+              
+              break;
+            case STATE_TIMER_SELECT::MINUTE1:
+              timer.minute1++;
+    
+              if(timer.minute1 > 5) {
+                timer.minute1 = 0;
+              }
+              
+              break;
+            case STATE_TIMER_SELECT::MINUTE2:
+              timer.minute2++;
+    
+              if(timer.minute2 > 9) {
+                timer.minute2 = 0;
+              }
+              
+              break;
+            case STATE_TIMER_SELECT::SECOND1:
+              timer.second1++;
+    
+              if(timer.second1 > 5) {
+                timer.second1 = 0;
+              }
+              
+              break;
+            case STATE_TIMER_SELECT::SECOND2:
+              timer.second2++;
+    
+              if(timer.second2 > 9) {
+                timer.second2 = 0;
+              }
+              
+              break;
           }
-          
+                    
           break;
-        case STATE_TIMER_SELECT::HOUR2:
-          timer.hour2++;
-
-          if(timer.hour2 > 9) {
-            timer.hour2 = 0;
-          }
-          
+        case STATE_TIMER::RUN:
           break;
-        case STATE_TIMER_SELECT::MINUTE1:
-          timer.minute1++;
-
-          if(timer.minute1 > 5) {
-            timer.minute1 = 0;
-          }
-          
-          break;
-        case STATE_TIMER_SELECT::MINUTE2:
-          timer.minute2++;
-
-          if(timer.minute2 > 9) {
-            timer.minute2 = 0;
-          }
-          
-          break;
-        case STATE_TIMER_SELECT::SECOND1:
-          timer.second1++;
-
-          if(timer.second1 > 5) {
-            timer.second1 = 0;
-          }
-          
-          break;
-        case STATE_TIMER_SELECT::SECOND2:
-          timer.second2++;
-
-          if(timer.second2 > 9) {
-            timer.second2 = 0;
-          }
-          
+        case STATE_TIMER::PAUSE:
+          timer.state = STATE_TIMER::INTRO;
+          timer.targetTime = 0;
+          timer.stateSelect = STATE_TIMER_SELECT::HOUR1;
           break;
       }
+      
       break;
     case STATE::CHRONO:
       Serial.println("Secondary switch clicked");
@@ -170,7 +186,6 @@ void ternarySwitchClicked() {
   
   switch(setUp.state) {
     case STATE::CLOCK:
-      Serial.println("Main switch clickedin CLOCK mode");
       break;
     case STATE::TIMER_1:
       switch(timer.state) {
@@ -178,7 +193,7 @@ void ternarySwitchClicked() {
           if(timer.targetTime == 0) {
             timer.targetTime = now + timer.fiveMinuteCount * 60.0 * 1000.0;
     
-            setRollsReferenceTime(now);
+            resetRolls(now);
 
             timer.state++;
           }
@@ -209,7 +224,7 @@ void ternarySwitchClicked() {
               timer.second1 * 10.0 * 1000.0 +
               timer.second2 * 1000.0;
     
-            setRollsReferenceTime(now);
+            resetRolls(now);
   
             timer.state++;
           }
