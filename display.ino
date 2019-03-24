@@ -115,3 +115,8 @@ void rollDown(ROLL *roll) {
   }
 }
 
+void setRollsReferenceTime(uint32_t time) {
+  rollHour1.referenceTime = rollHour2.referenceTime = rollMinute1.referenceTime =
+    rollMinute2.referenceTime = rollSecond1.referenceTime = rollSecond2.referenceTime = time;
+}
+

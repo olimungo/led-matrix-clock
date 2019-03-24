@@ -74,12 +74,7 @@ void mainSwitchClicked() {
 
   if(setUp.state == STATE::END) {
     setUp.state = STATE::CLOCK;
-    rollHour1.referenceTime = now;
-    rollHour2.referenceTime = now;
-    rollMinute1.referenceTime = now;
-    rollMinute2.referenceTime = now;
-    rollSecond1.referenceTime = now;
-    rollSecond2.referenceTime = now;
+    setRollsReferenceTime(now);
   }
 }
 
@@ -183,50 +178,53 @@ void ternarySwitchClicked() {
           if(timer.targetTime == 0) {
             timer.targetTime = now + timer.fiveMinuteCount * 60.0 * 1000.0;
     
-            rollHour1.referenceTime = now;
-            rollHour2.referenceTime = now;
-            rollMinute1.referenceTime = now;
-            rollMinute2.referenceTime = now;
-            rollSecond1.referenceTime = now;
-            rollSecond2.referenceTime = now;
+            setRollsReferenceTime(now);
 
             timer.state++;
           }
 
           break;
         case STATE_TIMER::RUN:
+          timer.referencePausedTime = millis();
           timer.state++;
           break;
         case STATE_TIMER::PAUSE:
+          timer.targetTime += millis() - timer.referencePausedTime;
           timer.state--;
           break;
       }
       
       break;
     case STATE::TIMER_2:
-      timer.stateSelect++;
-
-      if(timer.stateSelect > STATE_TIMER_SELECT::SECOND2) {
-        if(timer.targetTime == 0) {
-          timer.targetTime = now +
-            timer.hour1 * 10.0 * 60.0 * 60.0 * 1000.0 +
-            timer.hour2 * 60.0 * 60.0 * 1000.0 +
-            timer.minute1 * 10.0 * 60.0 * 1000.0 +
-            timer.minute2 * 60.0 * 1000.0 +
-            timer.second1 * 10.0 * 1000.0 +
-            timer.second2 * 1000.0;
+      switch(timer.state) {
+        case STATE_TIMER::SET:
+          if(timer.stateSelect < STATE_TIMER_SELECT::SECOND2) {
+            timer.stateSelect++;
+          } else {
+            timer.targetTime = now +
+              timer.hour1 * 10.0 * 60.0 * 60.0 * 1000.0 +
+              timer.hour2 * 60.0 * 60.0 * 1000.0 +
+              timer.minute1 * 10.0 * 60.0 * 1000.0 +
+              timer.minute2 * 60.0 * 1000.0 +
+              timer.second1 * 10.0 * 1000.0 +
+              timer.second2 * 1000.0;
+    
+            setRollsReferenceTime(now);
   
-          rollHour1.referenceTime = now;
-          rollHour2.referenceTime = now;
-          rollMinute1.referenceTime = now;
-          rollMinute2.referenceTime = now;
-          rollSecond1.referenceTime = now;
-          rollSecond2.referenceTime = now;
-
+            timer.state++;
+          }
+          
+          break;
+        case STATE_TIMER::RUN:
+          timer.referencePausedTime = millis();
           timer.state++;
-        }
+          break;
+        case STATE_TIMER::PAUSE:
+          timer.targetTime += millis() - timer.referencePausedTime;
+          timer.state--;
+          break;
       }
-      
+            
       break;
     case STATE::CHRONO:
       Serial.println("Secondary switch clicked");
