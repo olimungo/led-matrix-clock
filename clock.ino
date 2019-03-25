@@ -145,7 +145,7 @@ void displayTitleClock() {
     rollSecond2.currentBuffer[i] = 0;
   }
 
-  width = createTitle(clock, nextBuffer);
+  width = createBuffer(clock, nextBuffer);
 
   if(setUp.clockFormat == CLOCK_FORMAT::SHORT) {
     secondsBar = createSecondsBar(second);

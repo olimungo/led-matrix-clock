@@ -33,7 +33,8 @@ enum STATE {
   CLOCK,
   TIMER_1,
   TIMER_2,
-  CHRONO
+  CHRONO,
+  SETUP
 };
 
 enum CLOCK_FORMAT {
@@ -53,10 +54,10 @@ struct ROLL {
 };
 
 enum STATE_TIMER {
-  INTRO,
-  SET,
-  RUN,
-  PAUSE
+  ST_INTRO,
+  ST_SET,
+  ST_RUN,
+  ST_PAUSE
 };
 
 enum STATE_TIMER_SELECT {
@@ -66,6 +67,12 @@ enum STATE_TIMER_SELECT {
   MINUTE2,
   SECOND1,
   SECOND2
+};
+
+enum STATE_CHRONO {
+  SC_INTRO,
+  SC_PAUSE,
+  SC_RUN
 };
 
 struct SET_UP {
@@ -82,6 +89,12 @@ struct TIMER {
   uint8_t stateSelect;
 };
 
+struct CHRONOMETER {
+  uint8_t state;
+  uint32_t referenceTime;
+  uint32_t referencePausedTime;
+};
+
 MD_MAX72XX mx = MD_MAX72XX(HARDWARE_TYPE, MATRIX_DIN_PIN, MATRIX_CLK_PIN, MATRIX_CS_PIN, NUM_DEVICES); // SPI
 RTC_DS1307 rtc;
 
@@ -96,7 +109,8 @@ ROLL rollSecond1 = { 99 };
 ROLL rollSecond2 = { 99 };
 
 SET_UP setUp = { STATE::CLOCK };
-TIMER timer = { STATE_TIMER::INTRO, 5, 0, 0, 0, 0, 0, 0 };
+TIMER timer = { STATE_TIMER::ST_INTRO, 5, 0, 0, 0, 0, 0, 0 };
+CHRONOMETER chrono;
 
 uint32_t PAUSE_DISPLAY_REFERENCE_TIME = 0, PAUSE_DISPLAY_DURATION = 1000;
 

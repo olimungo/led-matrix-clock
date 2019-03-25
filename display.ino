@@ -1,12 +1,12 @@
 void displayTitle(char *title) {
   uint8_t nextBuffer[MAX_COLS], width;
 
-  width = createTitle(title, nextBuffer);
+  width = createBuffer(title, nextBuffer);
   centerBuffer(nextBuffer, width);
   switchBuffers(nextBuffer);
 }
 
-uint8_t createTitle(char *title, char *buffer) {
+uint8_t createBuffer(char *title, char *buffer) {
   uint8_t titleLength = strlen(title), charWidth, width = 0;
   uint8_t character[COL_SIZE];
 
@@ -119,7 +119,7 @@ void resetRolls(uint32_t time) {
   rollHour1.referenceTime = rollHour2.referenceTime = rollMinute1.referenceTime =
     rollMinute2.referenceTime = rollSecond1.referenceTime = rollSecond2.referenceTime = time;
     
-  rollHour1.currentDigit = rollHour2.currentDigit = rollMinute1.currentDigit =
-    rollMinute2.currentDigit = rollSecond1.currentDigit = rollSecond2.currentDigit = 99;
+  //rollHour1.currentDigit = rollHour2.currentDigit = rollMinute1.currentDigit =
+  //  rollMinute2.currentDigit = rollSecond1.currentDigit = rollSecond2.currentDigit = 99;
 }
 

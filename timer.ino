@@ -1,17 +1,19 @@
 void displayTimer() { 
   switch(timer.state) {
-    case STATE_TIMER::INTRO:
+    case STATE_TIMER::ST_INTRO:
       rollDownTimer();
       timer.state++;
+      
       break;
-    case STATE_TIMER::SET:
+    case STATE_TIMER::ST_SET:
       setTimer();
+      
       break;
-    case STATE_TIMER::RUN:
+    case STATE_TIMER::ST_RUN:
       runTimer();
       
       break;
-    case STATE_TIMER::PAUSE:
+    case STATE_TIMER::ST_PAUSE:
       break;
   }
 }
@@ -22,12 +24,26 @@ void rollDownTimer() {
 
   if(setUp.state == STATE::TIMER_1) {
     sprintf(clock, "00:%02d 00", timer.fiveMinuteCount);
+    
+    rollHour1.currentDigit = rollHour1.nextDigit = 0;
+    rollHour2.currentDigit = rollHour2.nextDigit = 0;
+    rollMinute1.currentDigit = rollMinute1.nextDigit = floor(timer.fiveMinuteCount / 10);
+    rollMinute2.currentDigit = rollMinute2.nextDigit = timer.fiveMinuteCount % 10;
+    rollSecond1.currentDigit = rollSecond1.nextDigit = 0;
+    rollSecond2.currentDigit = rollSecond2.nextDigit = 0;
   } else {
     sprintf(clock, "%d%d:%d%d %d%d", timer.hour1, timer.hour2, timer.minute1, timer.minute2,
       timer.second1, timer.second2);
+  
+    rollHour1.currentDigit = rollHour1.nextDigit = timer.hour1;
+    rollHour2.currentDigit = rollHour2.nextDigit = timer.hour2;
+    rollMinute1.currentDigit = rollMinute1.nextDigit = timer.minute1;
+    rollMinute2.currentDigit = rollMinute2.nextDigit = timer.minute2;
+    rollSecond1.currentDigit = rollSecond1.nextDigit = timer.second1;
+    rollSecond2.currentDigit = rollSecond2.nextDigit = timer.second2;
   }
 
-  createTitle(clock, nextBuffer);
+  createBuffer(clock, nextBuffer);
   switchBuffers(nextBuffer);
 }
 
@@ -47,10 +63,10 @@ void setTimer1() {
   if (evenSecond) {
     sprintf(clock, "00:%02d 00", timer.fiveMinuteCount);
   } else {
-    sprintf(clock, "            %02d          ", timer.fiveMinuteCount);
+    sprintf(clock, "00:           00");
   }
 
-  createTitle(clock, nextBuffer);
+  createBuffer(clock, nextBuffer);
   mx.setBuffer(MAX_COLS - 1, MAX_COLS, nextBuffer);
 }
 
@@ -91,7 +107,7 @@ void setTimer2() {
       timer.second1, timer.second2);
   }
 
-  createTitle(clock, nextBuffer);
+  createBuffer(clock, nextBuffer);
   mx.setBuffer(MAX_COLS - 1, MAX_COLS, nextBuffer);
 }
 

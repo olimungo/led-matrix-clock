@@ -50,6 +50,7 @@ void loop(void) {
       displayTimer();
       break;
     case STATE::CHRONO:
+      displayChrono();
       break;
   }
 }
