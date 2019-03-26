@@ -50,7 +50,8 @@ enum STATE_TIMER {
   ST_INTRO,
   ST_SET,
   ST_RUN,
-  ST_PAUSE
+  ST_PAUSE,
+  ST_END
 };
 
 enum STATE_TIMER_SELECT {
@@ -138,6 +139,5 @@ TIMER timer = { STATE_TIMER::ST_INTRO, 5, 0, 0, 0, 0, 0, 0 };
 CHRONOMETER chrono;
 
 uint32_t PAUSE_DISPLAY_REFERENCE_TIME = 0, PAUSE_DISPLAY_DURATION = 1000;
-
-uint8_t savedHour1, savedHour2, savedMinute1, savedMinute2, savedSecond1, savedSecond2, buzzerFrequency;
+int buzzerFrequency = 1000, buzzerStepper = 25;
 

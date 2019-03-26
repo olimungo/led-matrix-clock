@@ -22,7 +22,6 @@ void setup() {
   pinMode(MAIN_SWITCH_PIN, INPUT_PULLUP);
   pinMode(SECONDARY_SWITCH_PIN, INPUT_PULLUP);
   pinMode(TERNARY_SWITCH_PIN, INPUT_PULLUP);
-  pinMode(BUZZER, INPUT);
 
   // setClockShort();
   setClockFull();

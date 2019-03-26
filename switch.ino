@@ -45,6 +45,8 @@ void handleSwitch(uint8_t pin, bool *lastValue, uint32_t *lastRead) {
 
 void mainSwitchClicked() {
   uint32_t now = millis();
+
+  pinMode(BUZZER, INPUT);
   
   switch(globalState + 1) {
     case STATE::TIMER_1:
@@ -80,13 +82,7 @@ void mainSwitchClicked() {
 
   PAUSE_DISPLAY_REFERENCE_TIME = millis();
 
-  Serial.print("1: ");
-  Serial.println(globalState);
-
   globalState++;
-
-  Serial.print("2: ");
-  Serial.println(globalState);
 
   if(globalState > STATE::SETUP) {
     globalState = STATE::CLOCK;
@@ -95,6 +91,8 @@ void mainSwitchClicked() {
 }
 
 void secondarySwitchClicked() {
+  pinMode(BUZZER, INPUT);
+  
   switch(globalState) {
     case STATE::CLOCK:
       if(setUp.clockFormat == CLOCK_FORMAT::SHORT) {
@@ -184,6 +182,7 @@ void secondarySwitchClicked() {
         case STATE_TIMER::ST_RUN:
           break;
         case STATE_TIMER::ST_PAUSE:
+        case STATE_TIMER::ST_END:
           timer.state = STATE_TIMER::ST_INTRO;
           timer.targetTime = 0;
           timer.stateSelect = STATE_TIMER_SELECT::STS_HOUR1;
@@ -252,8 +251,10 @@ void secondarySwitchClicked() {
 
 void ternarySwitchClicked() {
   uint32_t now = millis();
-  uint8_t nextBuffer[MAX_COLS];
+  uint8_t nextBuffer[MAX_COLS], hour, minute;
   char clock[50];
+
+  pinMode(BUZZER, INPUT);
   
   switch(globalState) {
     case STATE::CLOCK:
@@ -312,6 +313,11 @@ void ternarySwitchClicked() {
           timer.targetTime += millis() - timer.referencePausedTime;
           timer.state--;
           break;
+        case STATE_TIMER::ST_END:
+          timer.state = STATE_TIMER::ST_INTRO;
+          timer.targetTime = 0;
+          timer.stateSelect = STATE_TIMER_SELECT::STS_HOUR1;
+          break;
       }
             
       break;
@@ -336,7 +342,13 @@ void ternarySwitchClicked() {
           if(setUp.stateSelect < STATE_SETUP_SELECT::SSS_MINUTE2) {
             setUp.stateSelect++;
           } else {
-            setUp.stateSelect = STATE_SETUP_SELECT::SSS_HOUR1;
+            hour = int(setUp.hour1) * 10 + int(setUp.hour2);
+            minute = int(setUp.minute1) * 10 + int(setUp.minute2);
+            
+            setRtcTime(hour, minute);
+
+            globalState = STATE::CLOCK;
+            displayTitleClock();
           }
           
           break;

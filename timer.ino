@@ -13,7 +13,8 @@ void displayTimer() {
       runTimer();
       
       break;
-    case STATE_TIMER::ST_PAUSE:
+    case STATE_TIMER::ST_END:
+      buzz();
       break;
   }
 }
@@ -112,12 +113,12 @@ void setTimer2() {
 }
 
 void runTimer() {
-  uint32_t remainingTime = timer.targetTime - millis();
+  int32_t remainingTime = timer.targetTime - millis();
   uint8_t hour, minute, second;
 
   if(remainingTime <= 0) {
     timer.targetTime = 0;
-    timer.state++;
+    timer.state = STATE_TIMER::ST_END;
     
     return;
   }

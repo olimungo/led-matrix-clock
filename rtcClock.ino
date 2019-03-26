@@ -13,13 +13,8 @@ int getSecond() {
   return now.second();
 }
 
-void setRtcTime() {
-  int hour, minute;
-
-  hour = int(savedHour1) * 10 + int(savedHour2);
-  minute = int(savedMinute1) * 10 + int(savedMinute2);
-  
-  rtc.adjust(DateTime(2018, 1, 1, hour, minute, 0));
+void setRtcTime(uint8_t hour, uint8_t minute) {
+  rtc.adjust(DateTime(2019, 1, 1, hour, minute, 0));
 }
 
 void getRtcTime(RTC_TIME *rtcTime) {
