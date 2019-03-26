@@ -3,7 +3,7 @@ void displayClock() {
     case CLOCK_FORMAT::SHORT:
       displayClockShort();
       break;
-    case CLOCK_FORMAT::FULL:
+    case CLOCK_FORMAT::LARGE:
       displayClockFull();
       break;
   }
@@ -104,7 +104,7 @@ void setClockShort() {
 }
 
 void setClockFull() {
-  setUp.clockFormat = CLOCK_FORMAT::FULL;
+  setUp.clockFormat = CLOCK_FORMAT::LARGE;
   
   rollHour1.col = 31;
   rollHour2.col = 26;
@@ -115,31 +115,36 @@ void setClockFull() {
 }
 
 void displayTitleClock() {
-  uint8_t hour = getHour(), hour1 = floor(hour / 10), hour2 = hour % 10;
-  uint8_t minute = getMinute(), minute1 = floor(minute / 10), minute2 = minute % 10;
-  uint8_t second = getSecond(), second1 = floor(second / 10), second2 = second % 10;
+  RTC_TIME rtcTime;
+  
+  getRtcTime(&rtcTime);
+
+  // Update the rolls so there's no graphic glitch
+  rollHour1.currentDigit = rtcTime.hour1;
+  rollHour2.currentDigit = rtcTime.hour2;
+  rollMinute1.currentDigit = rtcTime.minute1;
+  rollMinute2.currentDigit = rtcTime.minute2;
+  rollSecond1.currentDigit = rtcTime.second1;
+  rollSecond2.currentDigit = rtcTime.second2;
+  rollHour1.nextDigit = rtcTime.hour1;
+  rollHour2.nextDigit = rtcTime.hour2;
+  rollMinute1.nextDigit = rtcTime.minute1;
+  rollMinute2.nextDigit = rtcTime.minute2;
+  rollSecond1.nextDigit = rtcTime.second1;
+  rollSecond2.nextDigit = 99;
+
+  if(setUp.clockFormat == CLOCK_FORMAT::SHORT) {
+    displayTitleClock("%d%d:%d%d", &rtcTime, ADD_SECONDS_BAR);
+  } else {
+    displayTitleClock("%d%d:%d%d %d    ", &rtcTime, NO_SECONDS_BAR);
+  }
+}
+
+void displayTitleClock(char mask[50], RTC_TIME *rtcTime, bool addSecondsBar) {
   uint8_t nextBuffer[MAX_COLS], width, secondsBar;
   char clock[20];
 
-  if(setUp.clockFormat == CLOCK_FORMAT::SHORT) {
-    sprintf(clock, "%d%d:%d%d", hour1, hour2, minute1, minute2);
-  } else {
-    sprintf(clock, "%d%d:%d%d %d    ", hour1, hour2, minute1, minute2, second1);
-  }
-
-  // Update the rolls so there's no graphic glitch
-  rollHour1.currentDigit = hour1;
-  rollHour2.currentDigit = hour2;
-  rollMinute1.currentDigit = minute1;
-  rollMinute2.currentDigit = minute2;
-  rollSecond1.currentDigit = second1;
-  rollSecond2.currentDigit = second2;
-  rollHour1.nextDigit = hour1;
-  rollHour2.nextDigit = hour2;
-  rollMinute1.nextDigit = minute1;
-  rollMinute2.nextDigit = minute2;
-  rollSecond1.nextDigit = second1;
-  rollSecond2.nextDigit = 99;
+  sprintf(clock, mask, rtcTime->hour1, rtcTime->hour2, rtcTime->minute1, rtcTime->minute2, rtcTime->second1, rtcTime->second2);
 
   for(uint8_t i = 0; i < 4; i++) {
     rollSecond2.currentBuffer[i] = 0;
@@ -147,11 +152,10 @@ void displayTitleClock() {
 
   width = createBuffer(clock, nextBuffer);
 
-  if(setUp.clockFormat == CLOCK_FORMAT::SHORT) {
-    secondsBar = createSecondsBar(second);
+  if(addSecondsBar) {
+    secondsBar = createSecondsBar(rtcTime->second);
     nextBuffer[width++] = 0;
     nextBuffer[width++] = secondsBar;
-    width++;
   }
   
   centerBuffer(nextBuffer, width);

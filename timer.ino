@@ -22,7 +22,7 @@ void rollDownTimer() {
   uint8_t nextBuffer[MAX_COLS];
   char clock[20];
 
-  if(setUp.state == STATE::TIMER_1) {
+  if(globalState == STATE::TIMER_1) {
     sprintf(clock, "00:%02d 00", timer.fiveMinuteCount);
     
     rollHour1.currentDigit = rollHour1.nextDigit = 0;
@@ -48,7 +48,7 @@ void rollDownTimer() {
 }
 
 void setTimer() {
-  if(setUp.state == STATE::TIMER_1) {
+  if(globalState == STATE::TIMER_1) {
     setTimer1();
   } else {
     setTimer2();
@@ -77,27 +77,27 @@ void setTimer2() {
 
   if (evenSecond) {
     switch(timer.stateSelect) {
-      case STATE_TIMER_SELECT::HOUR1:
+      case STATE_TIMER_SELECT::STS_HOUR1:
         sprintf(clock, "     %d:%d%d %d%d", timer.hour2, timer.minute1, timer.minute2,
           timer.second1, timer.second2);
         break;
-      case STATE_TIMER_SELECT::HOUR2:
+      case STATE_TIMER_SELECT::STS_HOUR2:
         sprintf(clock, "%d     :%d%d %d%d", timer.hour1, timer.minute1, timer.minute2,
           timer.second1, timer.second2);
         break;
-      case STATE_TIMER_SELECT::MINUTE1:
+      case STATE_TIMER_SELECT::STS_MINUTE1:
         sprintf(clock, "%d%d:     %d %d%d", timer.hour1, timer.hour2, timer.minute2,
           timer.second1, timer.second2);
         break;
-      case STATE_TIMER_SELECT::MINUTE2:
+      case STATE_TIMER_SELECT::STS_MINUTE2:
         sprintf(clock, "%d%d:%d      %d%d", timer.hour1, timer.hour2, timer.minute1,
           timer.second1, timer.second2);
         break;
-      case STATE_TIMER_SELECT::SECOND1:
+      case STATE_TIMER_SELECT::STS_SECOND1:
         sprintf(clock, "%d%d:%d%d      %d", timer.hour1, timer.hour2, timer.minute1, timer.minute2,
           timer.second2);
         break;
-      case STATE_TIMER_SELECT::SECOND2:
+      case STATE_TIMER_SELECT::STS_SECOND2:
         sprintf(clock, "%d%d:%d%d %d    ", timer.hour1, timer.hour2, timer.minute1, timer.minute2,
           timer.second1);
         break;

@@ -46,19 +46,17 @@ void handleSwitch(uint8_t pin, bool *lastValue, uint32_t *lastRead) {
 void mainSwitchClicked() {
   uint32_t now = millis();
   
-  switch(setUp.state + 1) {
+  switch(globalState + 1) {
     case STATE::TIMER_1:
       timer.state = STATE_TIMER::ST_INTRO;
       timer.targetTime = 0;
-      
       displayTitle("TMR1");
       
       break;
     case STATE::TIMER_2:
       timer.state = STATE_TIMER::ST_INTRO;
       timer.targetTime = 0;
-      timer.stateSelect = STATE_TIMER_SELECT::HOUR1;
-        
+      timer.stateSelect = STATE_TIMER_SELECT::STS_HOUR1;
       displayTitle("TMR2");
       
       break;
@@ -66,30 +64,38 @@ void mainSwitchClicked() {
       chrono.state = STATE_CHRONO::SC_INTRO;
       chrono.referenceTime = 0;
       chrono.referencePausedTime = 0;
-      
       displayTitle("CHR");
       
       break;
     case STATE::SETUP:
+      setUp.state = STATE_SETUP::SS_INTRO;
       displayTitle("STP");
+      
       break;
     default:
       displayTitleClock();
+      
       break;
   }
 
   PAUSE_DISPLAY_REFERENCE_TIME = millis();
 
-  setUp.state++;
+  Serial.print("1: ");
+  Serial.println(globalState);
 
-  if(setUp.state > STATE::SETUP) {
-    setUp.state = STATE::CLOCK;
+  globalState++;
+
+  Serial.print("2: ");
+  Serial.println(globalState);
+
+  if(globalState > STATE::SETUP) {
+    globalState = STATE::CLOCK;
     resetRolls(now);
   }
 }
 
 void secondarySwitchClicked() {
-  switch(setUp.state) {
+  switch(globalState) {
     case STATE::CLOCK:
       if(setUp.clockFormat == CLOCK_FORMAT::SHORT) {
         setClockFull();
@@ -124,7 +130,7 @@ void secondarySwitchClicked() {
       switch(timer.state) {
         case STATE_TIMER::ST_SET:
           switch(timer.stateSelect) {
-            case STATE_TIMER_SELECT::HOUR1:
+            case STATE_TIMER_SELECT::STS_HOUR1:
               timer.hour1++;
     
               if(timer.hour1 > 9) {
@@ -132,7 +138,7 @@ void secondarySwitchClicked() {
               }
               
               break;
-            case STATE_TIMER_SELECT::HOUR2:
+            case STATE_TIMER_SELECT::STS_HOUR2:
               timer.hour2++;
     
               if(timer.hour2 > 9) {
@@ -140,7 +146,7 @@ void secondarySwitchClicked() {
               }
               
               break;
-            case STATE_TIMER_SELECT::MINUTE1:
+            case STATE_TIMER_SELECT::STS_MINUTE1:
               timer.minute1++;
     
               if(timer.minute1 > 5) {
@@ -148,7 +154,7 @@ void secondarySwitchClicked() {
               }
               
               break;
-            case STATE_TIMER_SELECT::MINUTE2:
+            case STATE_TIMER_SELECT::STS_MINUTE2:
               timer.minute2++;
     
               if(timer.minute2 > 9) {
@@ -156,7 +162,7 @@ void secondarySwitchClicked() {
               }
               
               break;
-            case STATE_TIMER_SELECT::SECOND1:
+            case STATE_TIMER_SELECT::STS_SECOND1:
               timer.second1++;
     
               if(timer.second1 > 5) {
@@ -164,7 +170,7 @@ void secondarySwitchClicked() {
               }
               
               break;
-            case STATE_TIMER_SELECT::SECOND2:
+            case STATE_TIMER_SELECT::STS_SECOND2:
               timer.second2++;
     
               if(timer.second2 > 9) {
@@ -180,7 +186,7 @@ void secondarySwitchClicked() {
         case STATE_TIMER::ST_PAUSE:
           timer.state = STATE_TIMER::ST_INTRO;
           timer.targetTime = 0;
-          timer.stateSelect = STATE_TIMER_SELECT::HOUR1;
+          timer.stateSelect = STATE_TIMER_SELECT::STS_HOUR1;
           break;
       }
       
@@ -193,6 +199,54 @@ void secondarySwitchClicked() {
       }
       
       break;
+    case STATE::SETUP:
+      switch(setUp.state) {
+        case STATE_SETUP::SS_SET:
+          switch(setUp.stateSelect) {
+            case STATE_SETUP_SELECT::SSS_HOUR1:
+              setUp.hour1++;
+    
+              if(setUp.hour1 > 2) {
+                setUp.hour1 = 0;
+              } else if (setUp.hour1 == 2 && setUp.hour2 > 3) {
+                setUp.hour2 = 0;
+              }
+              
+              break;
+            case STATE_SETUP_SELECT::SSS_HOUR2:
+              setUp.hour2++;
+    
+              if(setUp.hour2 > 3) {
+                if(setUp.hour1 == 2) {
+                  setUp.hour2 = 0;
+                }
+              } else if(setUp.hour2 > 9) {
+                setUp.hour2 = 0;
+              }
+              
+              break;
+            case STATE_SETUP_SELECT::SSS_MINUTE1:
+              setUp.minute1++;
+    
+              if(setUp.minute1 > 5) {
+                setUp.minute1 = 0;
+              }
+              
+              break;
+            case STATE_SETUP_SELECT::SSS_MINUTE2:
+              setUp.minute2++;
+    
+              if(setUp.minute2 > 9) {
+                setUp.minute2 = 0;
+              }
+              
+              break;
+          }
+                    
+          break;
+      }
+      
+      break;
   }
 }
 
@@ -201,7 +255,7 @@ void ternarySwitchClicked() {
   uint8_t nextBuffer[MAX_COLS];
   char clock[50];
   
-  switch(setUp.state) {
+  switch(globalState) {
     case STATE::CLOCK:
       break;
     case STATE::TIMER_1:
@@ -233,7 +287,7 @@ void ternarySwitchClicked() {
     case STATE::TIMER_2:
       switch(timer.state) {
         case STATE_TIMER::ST_SET:
-          if(timer.stateSelect < STATE_TIMER_SELECT::SECOND2) {
+          if(timer.stateSelect < STATE_TIMER_SELECT::STS_SECOND2) {
             timer.stateSelect++;
           } else {
             timer.targetTime = now +
@@ -275,6 +329,19 @@ void ternarySwitchClicked() {
           break;
       }
       
+      break;
+    case STATE::SETUP:
+      switch(setUp.state) {
+        case STATE_SETUP::SS_SET:
+          if(setUp.stateSelect < STATE_SETUP_SELECT::SSS_MINUTE2) {
+            setUp.stateSelect++;
+          } else {
+            setUp.stateSelect = STATE_SETUP_SELECT::SSS_HOUR1;
+          }
+          
+          break;
+      }
+            
       break;
   }
 }

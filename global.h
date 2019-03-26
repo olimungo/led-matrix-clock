@@ -29,6 +29,9 @@
 
 #define HARDWARE_TYPE MD_MAX72XX::ICSTATION_HW
 
+#define ADD_SECONDS_BAR true
+#define NO_SECONDS_BAR false
+
 enum STATE {
   CLOCK,
   TIMER_1,
@@ -39,18 +42,8 @@ enum STATE {
 
 enum CLOCK_FORMAT {
   SHORT,
-  FULL
-};
-
-struct ROLL {
-  uint8_t currentDigit;
-  uint8_t nextDigit;
-  uint8_t col;
-  uint32_t referenceTime;
-  uint8_t width;
-  uint8_t currentBuffer[COL_SIZE];
-  uint8_t nextBuffer[COL_SIZE];
-  int8_t currentBufferRow;
+  LARGE,
+  COMPLETE
 };
 
 enum STATE_TIMER {
@@ -61,12 +54,12 @@ enum STATE_TIMER {
 };
 
 enum STATE_TIMER_SELECT {
-  HOUR1,
-  HOUR2,
-  MINUTE1,
-  MINUTE2,
-  SECOND1,
-  SECOND2
+  STS_HOUR1,
+  STS_HOUR2,
+  STS_MINUTE1,
+  STS_MINUTE2,
+  STS_SECOND1,
+  STS_SECOND2
 };
 
 enum STATE_CHRONO {
@@ -75,9 +68,23 @@ enum STATE_CHRONO {
   SC_RUN
 };
 
+enum STATE_SETUP {
+  SS_INTRO,
+  SS_SET
+};
+
+enum STATE_SETUP_SELECT {
+  SSS_HOUR1,
+  SSS_HOUR2,
+  SSS_MINUTE1,
+  SSS_MINUTE2
+};
+
 struct SET_UP {
   uint8_t state;
+  uint8_t stateSelect;
   CLOCK_FORMAT clockFormat;
+  uint8_t hour1, hour2, minute1, minute2;
 };
 
 struct TIMER {
@@ -95,8 +102,26 @@ struct CHRONOMETER {
   uint32_t referencePausedTime;
 };
 
+struct ROLL {
+  uint8_t currentDigit;
+  uint8_t nextDigit;
+  uint8_t col;
+  uint32_t referenceTime;
+  uint8_t width;
+  uint8_t currentBuffer[COL_SIZE];
+  uint8_t nextBuffer[COL_SIZE];
+  int8_t currentBufferRow;
+};
+
+struct RTC_TIME {
+  uint8_t hour, minute, second;
+  uint8_t hour1, hour2, minute1, minute2, second1, second2;
+};
+
 MD_MAX72XX mx = MD_MAX72XX(HARDWARE_TYPE, MATRIX_DIN_PIN, MATRIX_CLK_PIN, MATRIX_CS_PIN, NUM_DEVICES); // SPI
 RTC_DS1307 rtc;
+
+uint8_t globalState = STATE::CLOCK;
 
 // currentDigit property must not be between 0 and 9, and has to be positive, so the roll down is triggered at the start
 // ...99 fits these rules...
@@ -108,7 +133,7 @@ ROLL rollMinute2 = { 99 };
 ROLL rollSecond1 = { 99 };
 ROLL rollSecond2 = { 99 };
 
-SET_UP setUp = { STATE::CLOCK };
+SET_UP setUp;
 TIMER timer = { STATE_TIMER::ST_INTRO, 5, 0, 0, 0, 0, 0, 0 };
 CHRONOMETER chrono;
 

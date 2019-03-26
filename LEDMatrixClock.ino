@@ -41,7 +41,7 @@ void loop(void) {
     }
   }
   
-  switch(setUp.state) {
+  switch(globalState) {
     case STATE::CLOCK:
       displayClock();
       break;
@@ -52,5 +52,9 @@ void loop(void) {
     case STATE::CHRONO:
       displayChrono();
       break;
+    case STATE::SETUP:
+      displaySetup();
+      break;
+
   }
 }
