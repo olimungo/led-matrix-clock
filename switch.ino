@@ -71,6 +71,7 @@ void mainSwitchClicked() {
       break;
     case STATE::SETUP:
       setUp.state = STATE_SETUP::SS_INTRO;
+      setUp.stateSelect = STATE_SETUP_SELECT::SSS_HOUR1;
       displayTitle("STP");
       
       break;
@@ -215,10 +216,8 @@ void secondarySwitchClicked() {
             case STATE_SETUP_SELECT::SSS_HOUR2:
               setUp.hour2++;
     
-              if(setUp.hour2 > 3) {
-                if(setUp.hour1 == 2) {
+              if(setUp.hour2 > 3 && setUp.hour1 == 2) {
                   setUp.hour2 = 0;
-                }
               } else if(setUp.hour2 > 9) {
                 setUp.hour2 = 0;
               }
