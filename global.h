@@ -1,7 +1,25 @@
-#define ROWS 8
-#define NUM_DEVICES 3
+#define DEBUG 1   // Enable or disable (default) debugging output
 
-#define MATRIX_CS_PIN 9 // DIN (MOSI) : 11 - CLK: 13
+#if DEBUG
+  #define PRINT(s, v)   { Serial.print(F(s)); Serial.print(v); } // decimal
+  #define PRINTX(s, v)  { Serial.print(F(s)); Serial.print(v, HEX); } // hex
+  #define PRINTB(s, v)  { Serial.print(F(s)); Serial.print(v, BIN); } // binary
+  #define PRINTC(s, v)  { Serial.print(F(s)); Serial.print((char)v); } // char
+  #define PRINTS(s)     { Serial.print(F(s)); } // string
+#else
+  #define PRINT(s, v)
+  #define PRINTX(s, v)
+  #define PRINTB(s, v)
+  #define PRINTC(s, v)
+  #define PRINTS(s)
+#endif
+
+#define NUM_DEVICES 4
+#define MAX_COLS COL_SIZE * NUM_DEVICES
+
+#define MATRIX_CLK_PIN 13
+#define MATRIX_DIN_PIN 11 // MOSI
+#define MATRIX_CS_PIN 9
 
 #define MAIN_SWITCH_PIN 6
 #define SECONDARY_SWITCH_PIN 7
@@ -9,169 +27,117 @@
 
 #define BUZZER 5
 
-#define MODE_CLOCK 0
-#define MODE_CHRONO 1
-#define MODE_TIMER 2
-#define MODE_SET_CLOCK 3
-#define MODE_SETUP 4
-#define MODE_EASTER_EGG 5
-#define MODE_MIDNIGHT 6
+#define HARDWARE_TYPE MD_MAX72XX::ICSTATION_HW
 
-#define SETCLOCK_HOUR1 0
-#define SETCLOCK_HOUR2 1
-#define SETCLOCK_MINUTE1 2
-#define SETCLOCK_MINUTE2 3
+#define ADD_SECONDS_BAR true
+#define NO_SECONDS_BAR false
 
-#define CHRONO_PAUSED 0
-#define CHRONO_RUNNING 1
-
-#define TIMER_HOUR1 0
-#define TIMER_HOUR2 1
-#define TIMER_MINUTE1 2
-#define TIMER_MINUTE2 3
-#define TIMER_SECOND1 4
-#define TIMER_SECOND2 5
-#define TIMER_PAUSED 6
-#define TIMER_RUNNING 7
-#define TIMER_OVER 8
-
-#define SETUP_TIME_SHORT 0
-#define SETUP_TIME_FULL 1
-
-#define MAX_CHAR_PER_ITEM 200
-
-#define MIDNIGHT_MODE_ACTIVATED true
-
-#define PRINT(m) Serial.println(m)
-
-struct Config {
-  int timeFormat;
-  unsigned long timer;
+enum STATE {
+  CLOCK,
+  TIMER_1,
+  TIMER_2,
+  CHRONO,
+  SETUP
 };
 
-const byte alphabetInProgmem[][ROWS] PROGMEM = {
-  {0,0,0,0,0,0,0,0}, // SPACE
-  {0x10,0x18,0x18,0x18,0x18,0x00,0x18,0x18}, // EXCL
-  {0x28,0x28,0x08,0x00,0x00,0x00,0x00,0x00}, // QUOT
-  {0x00,0x0a,0x7f,0x14,0x28,0xfe,0x50,0x00}, // #
-  {0x10,0x38,0x54,0x70,0x1c,0x54,0x38,0x10}, // $
-  {0x00,0x60,0x66,0x08,0x10,0x66,0x06,0x00}, // %
-  {0,0,0,0,0,0,0,0}, // &
-  {0x30,0x30,0x40,0x00,0x00,0x00,0x00,0x00}, // '
-  {0x02,0x04,0x08,0x08,0x08,0x08,0x08,0x04}, // (
-  {0x40,0x20,0x10,0x10,0x10,0x10,0x10,0x20}, // )
-  {0x00,0x10,0x54,0x38,0x10,0x38,0x54,0x10}, // *
-  {0x00,0x08,0x08,0x08,0x7f,0x08,0x08,0x08}, // +
-  {0x00,0x00,0x00,0x00,0x00,0x30,0x30,0x60}, // COMMA
-  {0x00,0x00,0x00,0x70,0x70,0x00,0x00,0x00}, // -
-  {0x00,0x00,0x00,0x00,0x00,0x00,0x60,0x60}, // DOT
-  {0x00,0x04,0x04,0x08,0x10,0x20,0x40,0x40}, // /
-  {0xf,0xd,0xd,0xd,0xd,0xd,0xd,0xf}, // 0
-  {0x3,0x7,0xb,0x3,0x3,0x3,0x3,0x3}, // 1
-  {0xe,0x3,0x3,0x6,0xc,0xc,0xc,0xf}, // 2
-  {0xf,0x3,0x3,0xf,0x3,0x3,0x3,0xf}, // 3
-  {0x8,0x8,0x9,0xf,0x3,0x3,0x3,0x3}, // 4
-  {0xf,0xc,0xc,0xf,0x3,0x3,0x3,0xf}, // 5
-  {0x8,0x8,0x8,0xf,0xd,0xd,0xd,0xf}, // 6
-  {0xf,0x3,0x3,0x3,0x3,0x3,0x3,0x3}, // 7
-  {0xf,0xd,0xd,0xf,0xd,0xd,0xd,0xf}, // 8
-  {0xf,0xb,0xb,0xf,0x3,0x3,0x3,0x3}, // 9
-  {0x0,0x0,0x1,0x0,0x0,0x1,0x0,0x0}, // :
-  {0x00,0x18,0x18,0x00,0x00,0x18,0x18,0x08}, // ;
-  {0x00,0x10,0x20,0x40,0x80,0x40,0x20,0x10}, // <
-  {0x00,0x00,0x7e,0x00,0x00,0xfc,0x00,0x00}, // =
-  {0x00,0x08,0x04,0x02,0x01,0x02,0x04,0x08}, // >
-  {0x70,0x98,0x18,0x30,0x60,0x00,0x60,0x60}, // ?
-  {0x00,0x30,0x48,0xba,0xba,0x84,0x78,0x00}, // @
-  {0x70,0xc8,0xc8,0xf8,0xc8,0xc8,0xc8,0xc8}, // A
-  {0xf0,0xc8,0xc8,0xf8,0xc8,0xc8,0xc8,0xf0}, // B
-  {0x78,0xc0,0xc0,0xc0,0xc0,0xc0,0xc0,0x78}, // C
-  {0xf0,0xc8,0xc8,0xc8,0xc8,0xc8,0xc8,0xf0}, // D
-  {0xf8,0xc0,0xc0,0xf0,0xc0,0xc0,0xc0,0xf8}, // E
-  {0xf8,0xc0,0xc0,0xf0,0xc0,0xc0,0xc0,0xc0}, // F
-  {0xf0,0xc0,0xc0,0xc0,0xd8,0xc8,0xc8,0xf0}, // G
-  {0xc8,0xc8,0xc8,0xf8,0xc8,0xc8,0xc8,0xc8}, // H
-  {0x60,0x60,0x60,0x60,0x60,0x60,0x60,0x60}, // I
-  {0x78,0x18,0x18,0x18,0x18,0x18,0x98,0x70}, // J
-  {0xc8,0xc8,0xd0,0xf0,0xf0,0xd0,0xc8,0xc8}, // K
-  {0xc0,0xc0,0xc0,0xc0,0xc0,0xc0,0xc0,0xf8}, // L
-  {0x88,0x88,0xd8,0xd8,0xa8,0xa8,0x88,0x88}, // M
-  {0x88,0xc8,0xc8,0xe8,0xb8,0x98,0x98,0x98}, // N
-  {0x70,0xc8,0xc8,0xc8,0xc8,0xc8,0xc8,0x70}, // O
-  {0xf8,0xc8,0xc8,0xc8,0xf8,0xc0,0xc0,0xc0}, // P
-  {0x70,0xc8,0xc8,0xc8,0xc8,0xc8,0xd0,0x68}, // Q
-  {0xf0,0xc8,0xc8,0xf0,0xf0,0xc8,0xc8,0xc8}, // R
-  {0x70,0xc8,0xc0,0x70,0x38,0x18,0x98,0x70}, // S
-  {0xf0,0x60,0x60,0x60,0x60,0x60,0x60,0x60}, // T
-  {0xc8,0xc8,0xc8,0xc8,0xc8,0xc8,0xc8,0x70}, // U
-  {0xc8,0xc8,0xc8,0xc8,0xc8,0x70,0x70,0x20}, // V
-  {0xc8,0xc8,0xc8,0xc8,0xc8,0xc8,0xe8,0x50}, // W
-  {0xc8,0xc8,0x50,0x20,0x70,0x98,0x98,0x98}, // X
-  {0x88,0x88,0x88,0x50,0x60,0x60,0x60,0x60}, // Y
-  {0xf8,0x08,0x18,0x30,0x60,0x60,0xc0,0xf8}, // Z
+enum CLOCK_FORMAT {
+  SHORT,
+  LARGE,
+  COMPLETE
 };
 
-const char easterEggTexts[][MAX_CHAR_PER_ITEM] PROGMEM = {
-  "MAEVA, N'OUBLIE PAS QUE TU ES BELLE",
-  "FORZA NAPOLI SEMPRE",
-  "NUJE VULIMME 'NA SPERANZA",
-  "TEST..........ICULES",
-  "YOU'RE TALKIN' TO ME?",
-  "MAIS LAISSE-MOI TE CHANTEEEEEEER, D'ALLER TE FAIRE ENHUUUUMMMMMMMM.",
-  "QU'EST-CE QUI EST JAUNE ET QUI ATTEND ? ....... TA MERE EN HELICOPTERE.",
-  "I WAS BORN READY.",
-  "NOM DE ZEUS, MARTY!",
-  "NONOBSTANT, CA VEUT DIRE QU'IL A PAYE ?",
-  "TU TUES UNE BALEINE, T'AURAS LES ECOLOS, T'AURAS GREENPEACE, T'AURAS LE COMMANDANT COUSTEAU SUR LE DOS ! MAIS DECIME UN BANC DE SARDINES, J'AIME AUTANT TE DIRE QU'ON T'AIDERA A LES METTRE EN BOITE !",
-  "IL N'Y A PAS DE PROBLEMES COMPLIQUES, IL N'Y A QUE DES SOLUTIONS INCONFORTABLES.",
-  "IF YOU DON'T KNOW WHO I AM... MAYBE YOUR BEST COURSE WOULD BE TO TREAD LIGHTLY.",
-  "VANITY, DEFINITELY MY FAVORITE SIN.",
-  "EVERYTHING WILL BE FINE AT THE END. IF IT'S NOT FINE, IT'S NOT THE END.",
-  "QUAND ON NE SAIT PAS FAIRE LE CORDONNIER, ON NE CASSE PAS LES COUILLES AU PETITS CLOUS.",
-  "PASQUALE CON QUESTA FAME TU DIGERISCI PURE LE CORDE DI CONTRABBASSO.",
-  "HELLO GORGEOUS.",
-  "- VOUS VOULEZ UN WHISKY ? - JUSTE UN DOIGT. - VOUS NE VOULEZ PAS UN WHISKY AVANT ?",
-  "- MISTER? - DOCTOR. - MISTER DOCTOR? - IT'S STRANGE. - MAYBE, WHO AM I TO JUDGE.",
-  "IF THERE'S SOMETHING STRANGE IN YOUR NEIGHBOURHOOD, WHO YOU GONNA CALL?",
-  "CAPABLE DU MEILLEUR COMME DU PIRE, MAIS POUR LE PIRE, JE SUIS LE MEILLEUR.",
-  "SCIENCE IS MY RELIGION",
-  "IF YOU DON'T LIKE MY FIRE, THEN DON'T COME AROUND.",
-  "J'AI GLISSE CHEF.",
-  "ALL I NEEDED IS THE LOVE YOU GAVE, AND ALL I NEEDED FOR ANOTHER DAY, AND ALL I EVER KNEW... ONLY YOU."
+enum STATE_TIMER {
+  ST_INTRO,
+  ST_SET,
+  ST_RUN,
+  ST_PAUSE,
+  ST_END
 };
 
-const char midnightModeTexts[][MAX_CHAR_PER_ITEM] PROGMEM = {
-  "MERRY CHRISTMAS",
-  "VROLIJK KERSTFEEST",
-  "JOYEUX NOEL",
-  "FELIZ NAVIDAD",
-  "FELIZ NATAL",
-  "FROHE WEIHNACHTEN",
-  "NADOLIG LLAWEN",
-  "BUON NATALE",
-  "KRISMASI YA FURAHA",
-  "MUTLU NOELLER"
+enum STATE_TIMER_SELECT {
+  STS_HOUR1,
+  STS_HOUR2,
+  STS_MINUTE1,
+  STS_MINUTE2,
+  STS_SECOND1,
+  STS_SECOND2
 };
 
-bool mainSwitchPressed = false, secondarySwitchPressed = false, ternarySwitchPressed = false;
+enum STATE_CHRONO {
+  SC_INTRO,
+  SC_PAUSE,
+  SC_RUN
+};
 
-LEDMatrixDriver lmd(NUM_DEVICES, MATRIX_CS_PIN);
+enum STATE_SETUP {
+  SS_INTRO,
+  SS_SET
+};
+
+enum STATE_SETUP_SELECT {
+  SSS_HOUR1,
+  SSS_HOUR2,
+  SSS_MINUTE1,
+  SSS_MINUTE2
+};
+
+struct SET_UP {
+  uint8_t state;
+  uint8_t stateSelect;
+  CLOCK_FORMAT clockFormat;
+  uint8_t hour1, hour2, minute1, minute2;
+};
+
+struct TIMER {
+  uint8_t state;
+  uint8_t fiveMinuteCount;
+  uint8_t hour1, hour2, minute1, minute2, second1, second2;
+  uint32_t targetTime;
+  uint32_t referencePausedTime;
+  uint8_t stateSelect;
+};
+
+struct CHRONOMETER {
+  uint8_t state;
+  uint32_t referenceTime;
+  uint32_t referencePausedTime;
+};
+
+struct ROLL {
+  uint8_t currentDigit;
+  uint8_t nextDigit;
+  uint8_t col;
+  uint32_t referenceTime;
+  uint8_t width;
+  uint8_t currentBuffer[COL_SIZE];
+  uint8_t nextBuffer[COL_SIZE];
+  int8_t currentBufferRow;
+};
+
+struct RTC_TIME {
+  uint8_t hour, minute, second;
+  uint8_t hour1, hour2, minute1, minute2, second1, second2;
+};
+
+MD_MAX72XX mx = MD_MAX72XX(HARDWARE_TYPE, MATRIX_DIN_PIN, MATRIX_CLK_PIN, MATRIX_CS_PIN, NUM_DEVICES); // SPI
 RTC_DS1307 rtc;
 
-Config config;
-unsigned int mode = MODE_CLOCK, modeSetClock, modeChrono, modeTimer = TIMER_OVER, modeSetup;
-unsigned int savedHour1, savedHour2, savedMinute1, savedMinute2, savedSecond1, savedSecond2, buzzerFrequency;
-unsigned long chronoMillis, chronoPause, timer = 0, timerStart, timerPause, easterEggMillis = 0;
-unsigned int timeFormat, buzzerStepper;
-bool midnightModeActivated = MIDNIGHT_MODE_ACTIVATED;
+uint8_t globalState = STATE::CLOCK;
 
-const unsigned int ANIM_DELAY = 20;
+// currentDigit property must not be between 0 and 9, and has to be positive, so the roll down is triggered at the start
+// ...99 fits these rules...
+// ...but 10, 69 and 666 would have fit too! ;-)
+ROLL rollHour1 = { 99 };
+ROLL rollHour2 = { 99 };
+ROLL rollMinute1 = { 99 };
+ROLL rollMinute2 = { 99 };
+ROLL rollSecond1 = { 99 };
+ROLL rollSecond2 = { 99 };
 
-char TXT_CLOCK[] = "CLOCK";
-char TXT_SET_CLOCK[] = "SET CLOCK";
-char TXT_CHRONO[] = "CHRONO";
-char TXT_TIMER[] = "TIMER";
-char TXT_SETUP[] = "SETUP";
-char TXT_SETUP_TIME_SHORT[] = "SHORT TIME FORMAT";
-char TXT_SETUP_TIME_FULL[] = "FULL TIME FORMAT";
-char TXT_EASTER_EGG[] = "ABCDEFGHIJKLMNOPRSTUVWXYZ";
+SET_UP setUp;
+TIMER timer = { STATE_TIMER::ST_INTRO, 5, 0, 0, 0, 0, 0, 0 };
+CHRONOMETER chrono;
+
+uint32_t PAUSE_DISPLAY_REFERENCE_TIME = 0, PAUSE_DISPLAY_DURATION = 1000;
+int buzzerFrequency = 1000, buzzerStepper = 25;
+

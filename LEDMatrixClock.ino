@@ -1,57 +1,59 @@
-#include <math.h>
-#include <stdio.h>
-#include <EEPROM.h>
+#include <MD_MAX72xx.h>
+#include <SPI.h>
 #include <TimeLib.h>
-#include <Wire.h>
 #include <RTClib.h> // SDA: A4 - SCL: A5
-#include <LEDMatrixDriver.hpp>
 
 #include "global.h"
+#include "font.h"
 
 void setup() {
-  Serial.begin(57600);
+  #if DEBUG
+    Serial.begin(57600);
+  #endif
 
+  rtc.begin();
+  mx.begin();
+
+  mx.control(MD_MAX72XX::INTENSITY, 0);
+  mx.clear();
+
+  mx.setFont(_font);
+  
   pinMode(MAIN_SWITCH_PIN, INPUT_PULLUP);
   pinMode(SECONDARY_SWITCH_PIN, INPUT_PULLUP);
   pinMode(TERNARY_SWITCH_PIN, INPUT_PULLUP);
-  
-  lmd.setEnabled(true);
-  lmd.setIntensity(0);
-  lmd.clear();
-  lmd.display();
 
-  timeFormat = getRecordedTimeFormat();
-  
-  rtc.begin();
+  // setClockShort();
+  setClockFull();
 }
 
-void loop() {
-  checkButton();
-  checkMidnight();
+void loop(void) {
+  uint32_t now = millis();
+  
+  handleSwitches();
 
-  switch(mode) {
-    case MODE_CLOCK:
-      displayTime();
+  if(PAUSE_DISPLAY_REFERENCE_TIME > 0) {
+    if (now < (PAUSE_DISPLAY_REFERENCE_TIME + PAUSE_DISPLAY_DURATION)) {
+      return;
+    } else {
+      PAUSE_DISPLAY_REFERENCE_TIME = 0;
+    }
+  }
+  
+  switch(globalState) {
+    case STATE::CLOCK:
+      displayClock();
       break;
-    case MODE_SET_CLOCK:
-      displaySetClock();
-      break;
-    case MODE_CHRONO:
-      displayChrono();
-      break;
-    case MODE_TIMER:
+    case STATE::TIMER_1:
+    case STATE::TIMER_2:
       displayTimer();
       break;
-    case MODE_SETUP:
+    case STATE::CHRONO:
+      displayChrono();
+      break;
+    case STATE::SETUP:
       displaySetup();
       break;
-    case MODE_EASTER_EGG:
-      displayEasterEgg();
-      break;
-    case MODE_MIDNIGHT:
-      displayMidnightMode();
-      break;
-  }
 
-  delay(ANIM_DELAY);
+  }
 }
