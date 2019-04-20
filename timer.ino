@@ -1,17 +1,17 @@
 void timerStart() {
-  timer.mode = MODE::RUN;
+  timer.mode = MD_RUN;
 
   sendOkReply();
 }
 
 void timerPause() {
-  timer.mode = MODE::PAUSE;
+  timer.mode = MD_PAUSE;
 
   sendOkReply();
 }
 
 void timerReset() {
-  timer.mode = MODE::OFF;
+  timer.mode = MD_OFF;
   timer.minute1 = timer.minute2 = timer.second1 = timer.second2 = 0;
 
   sendTimerReply();

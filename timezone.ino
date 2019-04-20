@@ -3,14 +3,16 @@ void timezoneOneMore() {
     timezone.shift += 1;
   }
 
+  ntpGetTime();
   sendTimezoneReply();
 }
 
 void timezoneOneLess() {
-  if (timezone.shift > 0) {
+  if (timezone.shift > -12) {
     timezone.shift -= 1;
   }
 
+  ntpGetTime();
   sendTimezoneReply();
 }
 

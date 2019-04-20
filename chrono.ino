@@ -1,17 +1,17 @@
 void chronoStart() {
-  chrono.mode = MODE::RUN;
+  chrono.mode = MD_RUN;
 
   sendOkReply();
 }
 
 void chronoPause() {
-  chrono.mode = MODE::PAUSE;
+  chrono.mode = MD_PAUSE;
 
   sendOkReply();
 }
 
 void chronoReset() {
-  chrono.mode = MODE::OFF;
+  chrono.mode = MD_OFF;
   chrono.ellapsed = 0;
   
   sendOkReply();

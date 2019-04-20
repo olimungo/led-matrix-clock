@@ -1,9 +1,16 @@
 #define AP_NAME "Clock"
+#define DST_SEC 0
+
+enum STATE {
+  ST_CLOCK,
+  ST_TIMER,
+  ST_CHRONO
+};
 
 enum MODE {
-  OFF,
-  RUN,
-  PAUSE
+  MD_OFF,
+  MD_RUN,
+  MD_PAUSE
 };
 
 struct TIMER {
@@ -17,9 +24,11 @@ struct CHRONO {
 };
 
 struct TIMEZONE {
-  uint8_t shift;
+  int shift;
 };
 
-TIMER timer = { MODE::OFF, 0, 0 };
-CHRONO chrono = { MODE::OFF };
+STATE state = ST_CLOCK;
+TIMER timer = { MD_OFF, 0, 0 };
+CHRONO chrono = { MD_OFF };
 TIMEZONE timezone = { 2 };
+bool isTimeSet = false;
