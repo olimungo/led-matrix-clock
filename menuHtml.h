@@ -1,4 +1,4 @@
-String html = \
+String menuHtml = \
 "<!DOCTYPE html>" \
 "<html>" \
 "    <head>" \
@@ -69,7 +69,7 @@ String html = \
 "            }" \
 "" \
 "            .action {" \
-"                width: 60px;" \
+"                width: 70px;" \
 "                height: 40px;" \
 "                background: orange;" \
 "                margin-right: 20px;" \
@@ -86,6 +86,15 @@ String html = \
 "    </head>" \
 "" \
 "    <body>" \
+"        <div class=\"card\">" \
+"            <h1>CLOCK</h1>" \
+"            <div class=\"align-horizontal\">" \
+"                <button class=\"action\" onclick=\"send('/action/clock/display')\">" \
+"                    DISPLAY" \
+"                </button>" \
+"            </div>" \
+"        </div>" \
+"" \
 "        <div class=\"card\">" \
 "            <h1>TIMER</h1>" \
 "" \
@@ -223,6 +232,19 @@ String html = \
 "            </div>" \
 "        </div>" \
 "" \
+"        <div class=\"card\">" \
+"            <h1>BRIGHTNESS</h1>" \
+"            <div class=\"align-horizontal\">" \
+"                <button onclick=\"sendBrightness('/action/brightness/oneMore')\">" \
+"                    +1" \
+"                </button>" \
+"                <label id=\"brightness\" class=\"num\">%%brightness%%</label>" \
+"                <button onclick=\"sendBrightness('/action/brightness/oneLess')\">" \
+"                    -1" \
+"                </button>" \
+"            </div>" \
+"        </div>" \
+"" \
 "        <script>" \
 "            function sendTimer(action) {" \
 "                const Http = sendHttpRequest(action);" \
@@ -247,9 +269,22 @@ String html = \
 "                Http.onreadystatechange = event => {" \
 "                    if (Http.responseText) {" \
 "                        const result = JSON.parse(Http.responseText);" \
-"                        const shiftElem = document.getElementById('shift');" \
+"                        const elem = document.getElementById('shift');" \
 "" \
-"                        shiftElem.textContent = result.shift;" \
+"                        elem.textContent = result.shift;" \
+"                    }" \
+"                };" \
+"            }" \
+"" \
+"            function sendBrightness(action) {" \
+"                const Http = sendHttpRequest(action);" \
+"" \
+"                Http.onreadystatechange = event => {" \
+"                    if (Http.responseText) {" \
+"                        const result = JSON.parse(Http.responseText);" \
+"                        const elem = document.getElementById('brightness');" \
+"" \
+"                        elem.textContent = result.brightness;" \
 "                    }" \
 "                };" \
 "            }" \

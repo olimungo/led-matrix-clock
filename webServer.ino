@@ -2,6 +2,8 @@ void startWebServer() {
   MDNS.begin("clock");
 
   server.on("/", menu);
+
+  server.on("/action/clock/display", clockDisplay);
   
   server.on("/action/timer/minute1/oneMore", timerMinute1OneMore);
   server.on("/action/timer/minute1/oneLess", timerMinute1OneLess);
@@ -26,6 +28,9 @@ void startWebServer() {
 
   server.on("/action/timezone/oneMore", timezoneOneMore);
   server.on("/action/timezone/oneLess", timezoneOneLess);
+
+  server.on("/action/brightness/oneMore", brightnessOneMore);
+  server.on("/action/brightness/oneLess", brightnessOneLess);
   
   server.onNotFound(handleNotFound);
   
@@ -33,19 +38,20 @@ void startWebServer() {
 }
 
 void menu() {
-  String result = html;
+  String pageHtml = menuHtml;
 
-  result.replace("%%minute1%%", String(timer.minute1));
-  result.replace("%%minute2%%", String(timer.minute2));
-  result.replace("%%second1%%", String(timer.second1));
-  result.replace("%%second2%%", String(timer.second2));
-  result.replace("%%shift%%", String(timezone.shift));
+  pageHtml.replace("%%minute1%%", String(timer.minute1));
+  pageHtml.replace("%%minute2%%", String(timer.minute2));
+  pageHtml.replace("%%second1%%", String(timer.second1));
+  pageHtml.replace("%%second2%%", String(timer.second2));
+  pageHtml.replace("%%shift%%", String(timezone.shift));
+  pageHtml.replace("%%brightness%%", String(brightness.value));
   
-  server.send(200, "text/html", result);
+  server.send(200, "text/html", pageHtml);
 }
 
 void handleNotFound() {
-  server.send(404, "text/plain", "QUOD GRATIS ASSERITUR GRATIS NEGATUR");
+  server.send(404, "text/plain", "404: QUOD GRATIS ASSERITUR GRATIS NEGATUR");
 }
 
 void sendOkReply() {
