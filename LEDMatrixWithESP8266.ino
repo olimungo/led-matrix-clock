@@ -17,12 +17,13 @@
 void setup(void) {
   Serial.begin(115200);
 
+  startMax7219Driver();
+
   // To remove default credentials
   // WiFi.disconnect();
 
   startWifi();
   startWebServer();
-  startMax7219Driver();
 
   // Specify which function to call back when a reply from NTP is received
   ntpConfigCallback();
@@ -37,15 +38,17 @@ void loop(void) {
   server.handleClient();
   MDNS.update();
 
-  switch (state) {
-    case ST_CLOCK:
-      displayClock();
-      break;
-    case ST_TIMER:
-      displayTimer();
-      break;
-    case ST_CHRONO:
-      displayChrono();
-      break;
+  if (isTimeSet) {
+    switch (state) {
+      case ST_CLOCK:
+        displayClock();
+        break;
+      case ST_TIMER:
+        displayTimer();
+        break;
+      case ST_CHRONO:
+        displayChrono();
+        break;
+    }
   }
 }
