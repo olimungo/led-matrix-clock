@@ -7,8 +7,7 @@ void clockDisplay() {
 }
 
 void displayClock() {
-  static uint32_t referenceTime;
-  uint32_t REFRESH_RATE = 1000;
+  static uint8_t previousSecond = 0;
   uint32_t now = millis();
   uint8_t hour = getHour(), hour1 = floor(hour / 10), hour2 = hour % 10;
   uint8_t minute = getMinute(), minute1 = floor(minute / 10), minute2 = minute % 10;
@@ -28,8 +27,8 @@ void displayClock() {
   rollDown(&roll3);
   rollDown(&roll4);
 
-  if(now > referenceTime + REFRESH_RATE) {
-    referenceTime += REFRESH_RATE;
+  if(second != previousSecond) {
+    previousSecond = second;
     secondsBar = createSecondsBar(second);
     mx.setColumn(0, secondsBar);
   }

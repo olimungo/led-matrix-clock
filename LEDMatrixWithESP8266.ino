@@ -17,7 +17,7 @@
 void setup(void) {
   Serial.begin(115200);
 
-  startMax7219Driver();
+  startMatrix();
 
   // To remove default credentials
   // WiFi.disconnect();
@@ -38,17 +38,18 @@ void loop(void) {
   server.handleClient();
   MDNS.update();
 
-  if (isTimeSet) {
-    switch (state) {
-      case ST_CLOCK:
-        displayClock();
-        break;
-      case ST_TIMER:
-        displayTimer();
-        break;
-      case ST_CHRONO:
-        displayChrono();
-        break;
-    }
+  switch (state) {
+    case ST_INIT:
+      displayInit();
+      break;
+    case ST_CLOCK:
+      displayClock();
+      break;
+    case ST_TIMER:
+      displayTimer();
+      break;
+    case ST_CHRONO:
+      displayChrono();
+      break;
   }
 }

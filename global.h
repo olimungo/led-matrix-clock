@@ -10,6 +10,7 @@
 #define REFRESH_RATE_NTP_TIME 60 * 60 * 24
 
 enum STATE {
+  ST_INIT,
   ST_CLOCK,
   ST_TIMER,
   ST_CHRONO
@@ -55,7 +56,7 @@ struct ROLL {
 ESP8266WebServer server(80);
 MD_MAX72XX mx = MD_MAX72XX(HARDWARE_TYPE, MATRIX_CS_PIN, NUM_DEVICES); // SPI
 
-STATE state = ST_CLOCK;
+STATE state = ST_INIT;
 TIMER timer = { MD_OFF, 0, 0 };
 CHRONO chrono = { MD_OFF };
 TIMEZONE timezone = { 2 };
