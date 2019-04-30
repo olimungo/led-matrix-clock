@@ -18,6 +18,13 @@ void startMatrix() {
   roll3.col = 5;
 }
 
+void updateRollReferenceTime(uint32_t now) { 
+  roll1.referenceTime = now;
+  roll2.referenceTime = now;
+  roll3.referenceTime = now;
+  roll4.referenceTime = now;
+}
+
 // Used to display the initial animation while waiting for the clock to sync with NTP
 void displayInit() {
   uint32_t now = millis();
@@ -47,7 +54,7 @@ void displayInit() {
     if(now > referenceTime + DISPLAY_TIME) {
       if (isTimeSet) {
         mx.clear();
-        delay(500);
+        delay(1000);
         
         roll1.col = 23;
         roll2.col = 18;
@@ -59,12 +66,14 @@ void displayInit() {
         roll3.currentDigit = 99;
         roll4.currentDigit = 99;
 
-        now = millis();
+        for(uint8_t i = 0; i < COL_SIZE - 1; i++) {
+          roll1.currentBuffer[i] = 0;
+          roll2.currentBuffer[i] = 0;
+          roll3.currentBuffer[i] = 0;
+          roll4.currentBuffer[i] = 0;
+        }     
 
-        roll1.referenceTime = now;
-        roll2.referenceTime = now;
-        roll3.referenceTime = now;
-        roll4.referenceTime = now;
+        updateRollReferenceTime(millis());
         
         state = ST_CLOCK;
 

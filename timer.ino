@@ -198,9 +198,7 @@ void sendTimerReply() {
   server.send(200, "application/json", result);
 }
 
-void setTimer() {
-  uint32_t now = millis();
-  
+void setTimer() { 
   state = ST_TIMER;
   chrono.mode = MD_OFF;
 
@@ -209,10 +207,7 @@ void setTimer() {
   roll3.nextDigit = timer.second1;
   roll4.nextDigit = timer.second2;
 
-  roll1.referenceTime = now;
-  roll2.referenceTime = now;
-  roll3.referenceTime = now;
-  roll4.referenceTime = now;
+  updateRollReferenceTime(millis());
 
   updateDisplay();
 }

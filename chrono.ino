@@ -38,9 +38,7 @@ void chronoPause() {
   sendOkReply();
 }
 
-void chronoReset() {
-  uint32_t now = millis();
-  
+void chronoReset() {  
   state = ST_CHRONO;
 
   chrono.mode = MD_OFF;
@@ -51,10 +49,7 @@ void chronoReset() {
   roll3.nextDigit = 0;
   roll4.nextDigit = 0;
 
-  roll1.referenceTime = now;
-  roll2.referenceTime = now;
-  roll3.referenceTime = now;
-  roll4.referenceTime = now;
+  updateRollReferenceTime(millis());
 
   sendOkReply();
 }

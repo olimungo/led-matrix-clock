@@ -32,6 +32,12 @@ void setup(void) {
 
   // Refresh time through NTP at a rate specified by REFRESH_RATE_NTP_TIME
   timerRefreshNtpTime.attach(REFRESH_RATE_NTP_TIME, ntpGetTime);
+
+  mx.clear();
+
+  delay(500);
+
+  updateRollReferenceTime(millis());
 }
 
 void loop(void) {

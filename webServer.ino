@@ -1,6 +1,4 @@
 void startWebServer() {
-  uint32_t now = millis();
-  
   MDNS.begin("clock");
 
   server.on("/", menu);
@@ -37,11 +35,6 @@ void startWebServer() {
   server.onNotFound(handleNotFound);
   
   server.begin();
-
-  roll1.referenceTime = now;
-  roll2.referenceTime = now;
-  roll3.referenceTime = now;
-  roll4.referenceTime = now;
 }
 
 void menu() {
